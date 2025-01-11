@@ -7,8 +7,10 @@ import styled from "styled-components";
 import { AppStateContext } from "../../AppContext";
 
 import { isFaceDetectedContinuous } from "../../Functions";
-import AudioPlayer from "../AudioPlayer/AudioPlayer";
+
 import welcomeBn from "../../Assets/audios/sara_welcome_bn.mp3";
+import welcomeEn from "../../Assets/audios/sara_welcome_en.mp3";
+import { AudioPlayingStatus } from "../../Constants";
 
 const Container = styled.div`
   display: flex;
@@ -24,12 +26,20 @@ const VideoElement = styled.video`
 
 const ContinuousFaceDetect = () => {
   // state variables
-  const { globalState, setGlobalState } = useContext(AppStateContext);
+  const { globalState, setGlobalState, addAudioToQueue, playNewAudio } =
+    useContext(AppStateContext);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [intervalId, setIntervalId] = useState(null);
   const [stream, setStream] = useState(null);
   const [faceGotDetected, setFaceDetected] = useState(false);
+
+  const welcomeAudioData = {
+    name: "Welcome audio",
+    file: globalState.currentLanguage === "bn" ? welcomeBn : welcomeEn,
+    delay: 300,
+    status: AudioPlayingStatus.NOT_STARTED,
+  };
 
   useEffect(() => {
     // func that starts taking images through webcam
@@ -127,17 +137,24 @@ const ContinuousFaceDetect = () => {
     setFaceDetected(faceDetected);
   };
 
+  useEffect(() => {
+    if (faceGotDetected && globalState.userId === null) {
+      addAudioToQueue(welcomeAudioData);
+    }
+  }, [faceGotDetected]);
+
+  useEffect(() => {
+    if (
+      globalState.audioPlayingData !== null &&
+      globalState.audioPlayingData.name === "Welcome audio" &&
+      globalState.audioPlayingData.status === AudioPlayingStatus.NOT_STARTED
+    ) {
+      playNewAudio();
+    }
+  }, [globalState.audioPlayingData]);
+
   return (
     <Container>
-      <AudioPlayer
-        audioFile={welcomeBn}
-        condition={
-          faceGotDetected &&
-          globalState.userId === null &&
-          globalState.pageStates.getStartedStates.welcomeAudioPlayDone === false
-        }
-        delayTime={100}
-      />
       <VideoElement ref={videoRef} />
       <canvas ref={canvasRef} style={{ display: "none" }} />
     </Container>

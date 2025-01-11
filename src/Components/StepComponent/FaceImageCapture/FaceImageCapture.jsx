@@ -21,11 +21,10 @@ import {
   stopPlayingAudio,
 } from "../../../Functions";
 import { Tooltip } from "react-tooltip";
-import { translations } from "../../../Constants";
+import { AudioPlayingStatus, translations } from "../../../Constants";
 
 import retakeContinueBn from "../../../Assets/audios/face_retake_contine_bn.wav";
 import retakeContinueEn from "../../../Assets/audios/face_retake_contine_en.wav";
-import AudioPlayer from "../../AudioPlayer/AudioPlayer";
 
 const FaceImageCapture = () => {
   const webcamRef = useRef(null);
@@ -33,7 +32,8 @@ const FaceImageCapture = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [countdown, setCountdown] = useState(3);
   const [isCapturing, setIsCapturing] = useState(false);
-  const { globalState, setGlobalState } = useContext(AppStateContext);
+  const { globalState, setGlobalState, addAudioToQueue, playNewAudio } =
+    useContext(AppStateContext);
   const resetCapture = () => {
     setIsPreview(false);
     setCapturedImage(null);
@@ -47,6 +47,35 @@ const FaceImageCapture = () => {
     setCountdown(3);
   };
 
+  const RetakeContinueAudioData = {
+    name: "RetakeContinue audio",
+    file:
+      globalState.currentLanguage === "bn"
+        ? retakeContinueBn
+        : retakeContinueEn,
+    delay: 300,
+    status: AudioPlayingStatus.NOT_STARTED,
+  };
+
+  useEffect(() => {
+    if (
+      isPreview &&
+      globalState.componentStates.getStartedModalStates
+        .retakeContinueAudioPlayed === false
+    ) {
+      addAudioToQueue(RetakeContinueAudioData);
+    }
+  }, [isPreview]);
+  useEffect(() => {
+    if (
+      globalState.audioPlayingData !== null &&
+      globalState.audioPlayingData.name === "RetakeContinue audio" &&
+      globalState.audioPlayingData.status === AudioPlayingStatus.NOT_STARTED
+    ) {
+      playNewAudio();
+    }
+  }, [globalState.audioPlayingData]);
+
   // if face got detected, then  checks if user is already in the database ,  if not already registered creates user using the face value and takes user to name adding component
   // if user found as registered, take to Get Started page with mic button to enable asking question
   const handleContinueBtnPress = async () => {
@@ -54,7 +83,7 @@ const FaceImageCapture = () => {
     if (faceDetected === true) {
       let userId = await recognizeFace(globalState, setGlobalState);
       if (userId === null) {
-        userId = await createUserUsingFace(globalState, setGlobalState);
+        // userId = await createUserUsingFace(globalState, setGlobalState);
         gotoNameAdd(setGlobalState);
       } else {
         await handleUserFound(setGlobalState, userId);
@@ -123,30 +152,30 @@ const FaceImageCapture = () => {
     }
   }, [isPreview]);
 
-  useEffect(() => {
-    if (
-      isPreview === true &&
-      globalState.componentStates.getStartedModalStates
-        .retakeContinueAudioPlayed === false
-    ) {
-      setTimeout(() => {
-        setGlobalState((prevState) => ({
-          ...prevState,
-          // currentImageData: "",
-          componentStates: {
-            ...prevState.componentStates,
-            getStartedModalStates: {
-              ...prevState.componentStates.getStartedModalStates,
-              retakeContinueAudioPlayed: true,
-            },
-          },
-        }));
-      }, 5000);
-    }
-  }, [
-    isPreview,
-    globalState.componentStates.getStartedModalStates.retakeContinueAudioPlayed,
-  ]);
+  // useEffect(() => {
+  //   if (
+  //     isPreview === true &&
+  //     globalState.componentStates.getStartedModalStates
+  //       .retakeContinueAudioPlayed === false
+  //   ) {
+  //     setTimeout(() => {
+  //       setGlobalState((prevState) => ({
+  //         ...prevState,
+  //         // currentImageData: "",
+  //         componentStates: {
+  //           ...prevState.componentStates,
+  //           getStartedModalStates: {
+  //             ...prevState.componentStates.getStartedModalStates,
+  //             retakeContinueAudioPlayed: true,
+  //           },
+  //         },
+  //       }));
+  //     }, 5000);
+  //   }
+  // }, [
+  //   isPreview,
+  //   globalState.componentStates.getStartedModalStates.retakeContinueAudioPlayed,
+  // ]);
 
   // updates global state value using captured image value
   const captureImage = () => {
@@ -173,18 +202,6 @@ const FaceImageCapture = () => {
     >
       {isPreview ? (
         <>
-          <AudioPlayer
-            audioFile={
-              globalState.currentLanguage === "bn"
-                ? retakeContinueBn
-                : retakeContinueEn
-            }
-            condition={
-              globalState.componentStates.getStartedModalStates
-                .retakeContinueAudioPlayed === false
-            }
-            delayTime={100}
-          />
           <Box
             // src={capturedImage}
             // className="circular-image"

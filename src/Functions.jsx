@@ -1,15 +1,165 @@
 import axios from "axios";
+import {
+  NameRecordingStatus,
+  NameProcessingStatus,
+  translations,
+  QuestionEditingStatus,
+} from "./Constants";
 
+export const getPlaceholderText = (globalState) => {
+  if (
+    globalState.componentStates.getStartedModalStates.nameRecordingStatus ===
+    NameRecordingStatus.STARTED
+  ) {
+    return "Recording...";
+  } else if (
+    globalState.componentStates.getStartedModalStates.nameRecordingStatus ===
+      NameRecordingStatus.DONE &&
+    globalState.componentStates.getStartedModalStates.nameProcessingStatus ===
+      NameProcessingStatus.STARTED
+  ) {
+    return "Processing...";
+  } else {
+    return translations[globalState.currentLanguage].nameInputPlaceHolder;
+  }
+};
 function countSpacesUsingIteration(str) {
   let count = 0;
   for (let char of str) {
-      if (char === ' ') {
-          count++;
-      }
+    if (char === " ") {
+      count++;
+    }
   }
   return count;
 }
 
+// let A = ""; // Initial string
+// let processedIndex = 0; // Tracks where the last processing ended
+
+const checkAndExtract = async (
+  responseMsg,
+  sliceIndex,
+  globalState,
+  setGlobalState
+) => {
+  console.log(responseMsg);
+  console.log(sliceIndex);
+
+  let spaceCount = 0;
+  let extractionEndIndex = sliceIndex;
+  let extracted = "";
+
+  for (let i = sliceIndex; i < responseMsg.length; i++) {
+    const char = responseMsg[i];
+    extracted += char;
+
+    if (char === " ") {
+      spaceCount++;
+    }
+
+    if (spaceCount === 4) {
+      extractionEndIndex = i + 1; // Include the 4th space
+      break;
+    }
+  }
+
+  // If 4 spaces were found
+  if (spaceCount === 4) {
+    const B = extracted.trimEnd(); // Extracted substring
+    console.log("Extracted:", B);
+    (async () => {
+      await speakOut(B, globalState, setGlobalState); // Perform the task
+      console.log("Background task complete");
+    })();
+
+    // await speakOut(B, globalState, setGlobalState, audioRef); // Perform the task
+    // setProcessedIndex(extractionEndIndex); // Update processed index
+  }
+
+  return extractionEndIndex;
+};
+
+// Global audio reference
+let globalAudioRef = null;
+
+// A queue to manage audio tasks
+const audioQueue = [];
+let isPlaying = false;
+
+// Function to process audio queue sequentially
+const processAudioQueue = async () => {
+  if (audioQueue.length === 0 || isPlaying) {
+    return; // Do nothing if no tasks or already playing
+  }
+
+  const { audioUrl, onComplete } = audioQueue.shift(); // Dequeue the first task
+  globalAudioRef = new Audio(audioUrl);
+  isPlaying = true;
+
+  // Play the audio
+  try {
+    await globalAudioRef.play();
+    console.log(`Playing audio: ${audioUrl}`);
+
+    globalAudioRef.onended = () => {
+      isPlaying = false; // Mark as not playing
+      if (onComplete) onComplete();
+      processAudioQueue(); // Process the next task
+    };
+
+    globalAudioRef.onerror = (error) => {
+      console.error("Audio playback error:", error);
+      isPlaying = false;
+      processAudioQueue(); // Continue with the next task
+    };
+  } catch (error) {
+    console.error("Error during audio playback:", error);
+    isPlaying = false;
+    processAudioQueue(); // Continue with the next task
+  }
+};
+
+// Function to add tasks to the queue
+const speakOut = async (msgText, globalState, setGlobalState) => {
+  console.log("Performing task on:", msgText);
+
+  try {
+    const audioResponse = await axios.post(
+      `https://bright-namely-ant.ngrok-free.app/text_to_speech/`,
+      { text: msgText, lang: globalState.currentLanguage },
+      { responseType: "blob" }
+    );
+
+    const audioUrl = URL.createObjectURL(
+      new Blob([audioResponse.data], { type: "audio/wav" })
+    );
+
+    // Add task to the queue
+    audioQueue.push({
+      audioUrl,
+      onComplete: () => console.log(`Completed audio for: ${msgText}`),
+    });
+
+    // Process the queue
+    processAudioQueue();
+  } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "Error converting text to speech";
+
+    console.error("Error converting text to speech:", error);
+    setGlobalState((prevState) => ({
+      ...prevState,
+      notificationStates: {
+        ...prevState.notificationStates,
+        showNotification: true,
+        notificationType: "error",
+        notificationMessage: errorMessage,
+      },
+    }));
+  }
+};
 
 export const stopPlayingAudio = (setGlobalState) => {
   setGlobalState((prevState) => {
@@ -163,6 +313,11 @@ export const handleFeedbackSpeaking = (
         }
       })
       .catch((error) => {
+        const errorMessage =
+          error.code === "ERR_NETWORK"
+            ? "Network error! Please check your connection."
+            : "No voice was detected.Try again!";
+
         console.error("There was an error!", error);
         setGlobalState((prevState) => ({
           ...prevState,
@@ -170,13 +325,18 @@ export const handleFeedbackSpeaking = (
             ...prevState.notificationStates,
             showNotification: true,
             notificationType: "error",
-            notificationMessage: "No voice was detected.Try again!",
+            notificationMessage: errorMessage,
             processingAudio: false,
           },
         }));
         // setLoading(false);
       });
   } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "No voice was detected.Try again!";
+
     console.error("There was an error!", error);
     setGlobalState((prevState) => ({
       ...prevState,
@@ -184,7 +344,7 @@ export const handleFeedbackSpeaking = (
         ...prevState.notificationStates,
         showNotification: true,
         notificationType: "error",
-        notificationMessage: "No voice was detected.Try again!",
+        notificationMessage: errorMessage,
         processingAudio: false,
       },
     }));
@@ -234,6 +394,29 @@ export const handleFeedbackSubmitting = async (globalState, setGlobalState) => {
     },
   }));
 };
+const addUserQuestionToMessages = (setGlobalState, text) => {
+  const messageId = Date.now(); // Unique ID based on timestamp
+  console.log(messageId);
+  const userMessage = {
+    user_id: String(messageId),
+    user_type: "user",
+    text: text,
+    status: QuestionEditingStatus.NOT_STARTED,
+  };
+  setGlobalState((prevState) => ({
+    ...prevState,
+    messages: [...prevState.messages, userMessage],
+    currentMessage: userMessage,
+
+    pageStates: {
+      ...prevState.pageStates,
+      ConversationStates: {
+        ...prevState.pageStates.ConversationStates,
+        responseStringProcessedIndex: 0,
+      },
+    },
+  }));
+};
 
 const QuestionAnswering = async (
   globalState,
@@ -253,6 +436,14 @@ const QuestionAnswering = async (
     ...prevState,
     messages: [...prevState.messages, userMessage],
     currentMessage: userMessage,
+
+    pageStates: {
+      ...prevState.pageStates,
+      ConversationStates: {
+        ...prevState.pageStates.ConversationStates,
+        responseStringProcessedIndex: 0,
+      },
+    },
   }));
 
   try {
@@ -301,6 +492,7 @@ const QuestionAnswering = async (
       messages: [...prevState.messages, botResponse],
     }));
 
+    let sliceIndex = 0;
     while (!done) {
       const { value, done: streamDone } = await reader.read();
       done = streamDone;
@@ -312,50 +504,37 @@ const QuestionAnswering = async (
       contentMatches.forEach((match) => {
         const content = match[1];
         botResponseText += content; // Append content to bot response text
-        console.log(content ,countSpacesUsingIteration(botResponseText))
-        botResponse.text = botResponseText; // Update the bot response text
 
-        // Update the existing bot message in the global state
-        setGlobalState((prevState) => {
-          const updatedMessages = prevState.messages.map((msg) => {
-            // Check if the message ID matches
-            if (msg.user_id === botId) {
-              return botResponse; // Update the existing bot response
-            }
-            return msg; // Return unchanged message
+        checkAndExtract(
+          botResponseText,
+          sliceIndex,
+          globalState,
+          setGlobalState
+        ).then((newSliceIndex) => {
+          sliceIndex = newSliceIndex; // Update sliceIndex once resolved
+          botResponse.text = botResponseText; // Update the bot response text
+
+          // Update the existing bot message in the global state
+          setGlobalState((prevState) => {
+            const updatedMessages = prevState.messages.map((msg) => {
+              // Check if the message ID matches
+              if (msg.user_id === botId) {
+                return botResponse; // Update the existing bot response
+              }
+              return msg; // Return unchanged message
+            });
+            console.log(updatedMessages);
+            return { ...prevState, messages: updatedMessages };
           });
-          console.log(updatedMessages);
-          return { ...prevState, messages: updatedMessages };
         });
       });
     }
-
-    // Handle text-to-speech after the streaming response is fully received
-    try {
-      const audioResponse = await axios.post(
-        `https://bright-namely-ant.ngrok-free.app/text_to_speech/`,
-        { text: botResponseText, lang: globalState.currentLanguage },
-        { responseType: "blob" }
-      );
-
-      const audioUrl = URL.createObjectURL(
-        new Blob([audioResponse.data], { type: "audio/wav" })
-      );
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.play();
-    } catch (error) {
-      console.error("Error converting text to speech:", error);
-      setGlobalState((prevState) => ({
-        ...prevState,
-        notificationStates: {
-          ...prevState.notificationStates,
-          showNotification: true,
-          notificationType: "error",
-          notificationMessage: "Error converting text to speech",
-        },
-      }));
-    }
   } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "Sorry, there was an error processing your request. Try again!";
+
     console.error("There was an error!", error);
     setGlobalState((prevState) => ({
       ...prevState,
@@ -363,11 +542,24 @@ const QuestionAnswering = async (
         ...prevState.notificationStates,
         showNotification: true,
         notificationType: "error",
-        notificationMessage:
-          "Sorry, there was an error processing your request. Try again!",
+        notificationMessage: errorMessage,
       },
     }));
   }
+  // finally{
+  //   setGlobalState((prevState) => {
+  //     return {
+  //       ...prevState,
+  //       pageStates:{
+  //         ...prevState.pageStates,
+  //         ConversationStates: {
+  //           ...prevState.pageStates.ConversationStates,
+  //           responseStringProcessedIndex: 0
+  //         },
+  //       }
+  //     };
+  //   });
+  // }
 };
 
 export const QuestionAsking = (
@@ -447,6 +639,10 @@ export const QuestionAsking = (
         }
       })
       .catch((error) => {
+        const errorMessage =
+          error.code === "ERR_NETWORK"
+            ? "Network error! Please check your connection."
+            : "No voice was detected.Try again!";
         console.error("There was an error!", error);
         setGlobalState((prevState) => ({
           ...prevState,
@@ -454,13 +650,18 @@ export const QuestionAsking = (
             ...prevState.notificationStates,
             showNotification: true,
             notificationType: "error",
-            notificationMessage: "No voice was detected.Try again!",
+            notificationMessage: errorMessage,
           },
         }));
 
         // setLoading(false);
       });
   } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "No voice was detected.Try again!";
+
     console.error("There was an error!", error);
     setGlobalState((prevState) => ({
       ...prevState,
@@ -468,7 +669,7 @@ export const QuestionAsking = (
         ...prevState.notificationStates,
         showNotification: true,
         notificationType: "error",
-        notificationMessage: "No voice was detected.Try again!",
+        notificationMessage: errorMessage,
       },
     }));
   }
@@ -537,17 +738,32 @@ export const handleUserFound = async (setGlobalState, userId) => {
     },
   }));
 };
-export const handleStartBtnClick = (setGlobalState) => {
-  setGlobalState((prevState) => ({
-    ...prevState,
-    componentStates: {
-      ...prevState.componentStates,
-      getStartedModalStates: {
-        ...prevState.componentStates.getStartedModalStates,
-        openModal: false,
+export const handleStartBtnClick = async (globalState, setGlobalState) => {
+  if (globalState.userName === "") {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      notificationStates: {
+        ...prevState.notificationStates,
+        showNotification: true,
+        notificationType: "error",
+        notificationMessage: "Please add your name to continue!",
       },
-    },
-  }));
+    }));
+  } else {
+    const userId = await createUserUsingFaceName(globalState, setGlobalState);
+    console.log(userId);
+
+    setGlobalState((prevState) => ({
+      ...prevState,
+      componentStates: {
+        ...prevState.componentStates,
+        getStartedModalStates: {
+          ...prevState.componentStates.getStartedModalStates,
+          openModal: false,
+        },
+      },
+    }));
+  }
 };
 export const isFaceDetectedContinuous = async (imgData, setGlobalState) => {
   try {
@@ -586,13 +802,18 @@ export const isFaceDetectedContinuous = async (imgData, setGlobalState) => {
     }));
     return true;
   } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "Sorry, error detecting face!";
+
     setGlobalState((prevState) => ({
       ...prevState,
       notificationStates: {
         ...prevState.notificationStates,
         showNotification: true,
         notificationType: "error",
-        notificationMessage: "Sorry, Error detecting face!",
+        notificationMessage: errorMessage,
       },
     }));
     console.error("Error detecting face:", error);
@@ -638,6 +859,12 @@ export const isFaceDetected = async (globalState, setGlobalState) => {
     }));
     return true;
   } catch (error) {
+    // Specific error message for network issues
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "Sorry, error detecting face!";
+
     setGlobalState((prevState) => ({
       ...prevState,
       currentImageData: null,
@@ -645,7 +872,7 @@ export const isFaceDetected = async (globalState, setGlobalState) => {
         ...prevState.notificationStates,
         showNotification: true,
         notificationType: "error",
-        notificationMessage: "Sorry, Error detecting face!",
+        notificationMessage: errorMessage,
       },
     }));
     console.error("Error detecting face:", error);
@@ -727,6 +954,11 @@ export const recognizeFace = async (globalState, setGlobalState) => {
       return response.data.user_id;
     }
   } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "Sorry, There was an error in face recognition. Try Again!";
+
     console.error("There was an error!", error);
 
     // Update global state with error notification
@@ -734,8 +966,7 @@ export const recognizeFace = async (globalState, setGlobalState) => {
       ...prevState,
       showNotification: true,
       notificationType: "error",
-      notificationMessage:
-        "Sorry, There was an error in face recognition. Try Again!",
+      notificationMessage: errorMessage,
       currentImageData: null,
     }));
 
@@ -744,13 +975,14 @@ export const recognizeFace = async (globalState, setGlobalState) => {
   }
 };
 
-export const createUserUsingFace = async (globalState, setGlobalState) => {
+export const createUserUsingFaceName = async (globalState, setGlobalState) => {
   try {
     const base64data = globalState.currentImageData.split(",")[1];
     const response = await axios.post(
-      `http://localhost:8000/create_user_face`,
+      `http://localhost:8000/create_user_face_name`,
       {
         image: base64data,
+        name: globalState.userName,
       }
     );
 
@@ -775,6 +1007,11 @@ export const createUserUsingFace = async (globalState, setGlobalState) => {
       return response.data.user_id;
     }
   } catch (error) {
+    const errorMessage =
+      error.code === "ERR_NETWORK"
+        ? "Network error! Please check your connection."
+        : "Sorry, Error in creating user. Try Again!";
+
     console.error("There was an error!", error);
 
     // Update global state with error notification
@@ -785,7 +1022,7 @@ export const createUserUsingFace = async (globalState, setGlobalState) => {
         ...prevState.notificationStates,
         showNotification: true,
         notificationType: "error",
-        notificationMessage: "Sorry, Error in creating user. Try Again!",
+        notificationMessage: errorMessage,
       },
     }));
 
@@ -824,17 +1061,20 @@ export const setUserName = (setGlobalState, user_id) => {
     })
     .then(async (response) => {
       console.log(response.data);
-      let bn_name = response.data.bn;
-      let en_name = response.data.en;
-      if (bn_name !== "name not there") {
+      let name = response.data.name;
+      if (name !== "name not there") {
         setGlobalState((prevState) => ({
           ...prevState,
-          userName: bn_name,
-          userNameEn: en_name,
+          userName: name,
         }));
       }
     })
     .catch((error) => {
+      const errorMessage =
+        error.code === "ERR_NETWORK"
+          ? "Network error! Please check your connection."
+          : "Sorry, there was an error.Please say your name again!";
+
       console.error("There was an error!", error);
       setGlobalState((prevState) => ({
         ...prevState,
@@ -842,8 +1082,7 @@ export const setUserName = (setGlobalState, user_id) => {
           ...prevState.notificationStates,
           showNotification: true,
           notificationType: "error",
-          notificationMessage:
-            "Sorry, there was an error.Please say your name again!",
+          notificationMessage: errorMessage,
         },
       }));
     });
@@ -860,17 +1099,20 @@ export const sendMessage = (globalState, setGlobalState, text) => {
     })
     .then(async (response) => {
       console.log(response.data);
-      let bn_name = response.data.bn;
-      let en_name = response.data.en;
-      if (bn_name !== "name not there") {
+      let name = response.data.name;
+      if (name !== "name not there") {
         setGlobalState((prevState) => ({
           ...prevState,
-          userName: bn_name,
-          userNameEn: en_name,
+          userName: name,
         }));
       }
     })
     .catch((error) => {
+      const errorMessage =
+        error.code === "ERR_NETWORK"
+          ? "Network error! Please check your connection."
+          : "Sorry, there was an error.Please say your name again!";
+
       console.error("There was an error!", error);
       setGlobalState((prevState) => ({
         ...prevState,
@@ -878,8 +1120,7 @@ export const sendMessage = (globalState, setGlobalState, text) => {
           ...prevState.notificationStates,
           showNotification: true,
           notificationType: "error",
-          notificationMessage:
-            "Sorry, there was an error.Please say your name again!",
+          notificationMessage: errorMessage,
         },
       }));
 
@@ -887,56 +1128,66 @@ export const sendMessage = (globalState, setGlobalState, text) => {
     });
 };
 export const handleNameSpeaking = (globalState, setGlobalState, base64data) => {
-  try {
-    axios
-      .post(`https://bright-namely-ant.ngrok-free.app/speech_to_text`, {
-        audio: base64data,
-        lang: globalState.currentLanguage,
-        // lang: "en",
-      })
-      .then((response) => {
-        const transcript = response.data.transcript;
-        console.log(transcript);
-        console.log(transcript.length);
-        if (transcript.length > 0) {
-          sendMessage(globalState, setGlobalState, transcript);
-        }
-      })
-      .catch((error) => {
-        console.error("There was an error!", error);
+  setGlobalState((prevState) => ({
+    ...prevState,
+    currentNameData: null,
+    componentStates: {
+      ...prevState.componentStates,
+      getStartedModalStates: {
+        ...prevState.componentStates.getStartedModalStates,
+        nameProcessingStatus: NameProcessingStatus.STARTED,
+        // nameRecordingStatus: NameRecordingStatus.DONE,
+      },
+    },
+  }));
+  axios
+    .post(`https://bright-namely-ant.ngrok-free.app/speech_to_text`, {
+      audio: base64data,
+      lang: globalState.currentLanguage,
+      // lang: "en",
+    })
+    .then((response) => {
+      const transcript = response.data.transcript;
+      console.log(transcript);
+      console.log(transcript.length);
+      if (transcript.length > 0) {
+        // sendMessage(globalState, setGlobalState, transcript);
         setGlobalState((prevState) => ({
           ...prevState,
-          notificationStates: {
-            ...prevState.notificationStates,
-            showNotification: true,
-            notificationType: "error",
-            notificationMessage: "No voice was detected.Try again!",
-          },
+          userName: transcript,
         }));
+      }
+    })
+    .catch((error) => {
+      const errorMessage =
+        error.code === "ERR_NETWORK"
+          ? "Network error! Please check your connection."
+          : "No voice was detected.Try again!";
 
-        // setLoading(false);
-      });
-  } catch (error) {
-    console.error("There was an error!", error);
-    setGlobalState((prevState) => ({
-      ...prevState,
-      notificationStates: {
-        ...prevState.notificationStates,
-        showNotification: true,
-        notificationType: "error",
-        notificationMessage: "No voice was detected.Try again!",
-      },
-    }));
-  } finally {
-    setGlobalState((prevState) => ({
-      ...prevState,
-      componentStates: {
-        ...prevState.componentStates,
-        getStartedModalStates: {
-          ...prevState.componentStates.getStartedModalStates,
-          nameAudioProcessing: false,
+      console.error("There was an error!", error);
+      setGlobalState((prevState) => ({
+        ...prevState,
+        notificationStates: {
+          ...prevState.notificationStates,
+          showNotification: true,
+          notificationType: "error",
+          notificationMessage: errorMessage,
         },
-      },
-    }));
-  }
+      }));
+
+      // setLoading(false);
+    })
+    .finally(() =>
+      setGlobalState((prevState) => ({
+        ...prevState,
+        componentStates: {
+          ...prevState.componentStates,
+          getStartedModalStates: {
+            ...prevState.componentStates.getStartedModalStates,
+            nameProcessingStatus: NameProcessingStatus.DONE,
+            // nameRecordingStatus: NameRecordingStatus.DONE,
+          },
+        },
+      }))
+    );
 };

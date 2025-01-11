@@ -106,6 +106,26 @@ export const banglaMonths = {
 
 export const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
+export const NameRecordingStatus = {
+  STARTED: "started",
+  DONE: "done",
+  NOT_STARTED: "not_started",
+};
+export const NameProcessingStatus = {
+  STARTED: "started",
+  DONE: "done",
+  NOT_STARTED: "not_started",
+};
+export const AudioPlayingStatus = {
+  STARTED: "started",
+  DONE: "done",
+  NOT_STARTED: "not_started",
+};
+export const QuestionEditingStatus = {
+  STARTED: "started",
+  DONE: "done",
+  NOT_STARTED: "not_started",
+};
 export const initState = {
   userInFront: false,
   currentPage: "Start",
@@ -114,12 +134,14 @@ export const initState = {
   currentNameData: null,
   userId: null,
   userName: "",
-  userNameEn: "",
   currentQuestionData: "",
   messages: [],
   audioPlayDone: false,
+  stopCurrentlyPlayingAudio: false,
   currentRatingValue: 1,
   currentRatingDetailData: null,
+  audioPlayingDatas: [],
+  audioInstance: null, // Moved audio instance here
   notificationStates: {
     showNotification: false,
     notificationType: "",
@@ -147,7 +169,8 @@ export const initState = {
       currentStep: 1,
       faceComponentContinueBtnPressed: false,
       showContinueToolTip: false,
-      nameAudioProcessing: false,
+      nameRecordingStatus: NameRecordingStatus.NOT_STARTED,
+      nameProcessingStatus: NameProcessingStatus.NOT_STARTED,
       retakeContinueAudioPlayed: false,
     },
     feedbackStates: {
@@ -155,36 +178,10 @@ export const initState = {
       listeningStart: false,
       listeningEnd: false,
       currentFeedbackItem: 0,
-      allFeedbackStates: [
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-        {
-          emojiRating: 1,
-          detail: "",
-        },
-      ],
+      allFeedbackStates: Array(7).fill({
+        emojiRating: 1,
+        detail: "",
+      }),
     },
   },
 };

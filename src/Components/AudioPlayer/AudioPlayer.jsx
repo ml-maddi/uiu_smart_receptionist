@@ -8,20 +8,12 @@ import { AppStateContext } from "../../AppContext";
 // the condition upon becoming true, the audio will be played
 // delayTime = after the condition becomes true, then after how many miliseconds the audio will be played
 
-const AudioPlayer = ({ audioFile, condition, delayTime = 3000 }) => {
-  const { globalState, setGlobalState, stopCurrentAudio, playNewAudio } =
+const AudioPlayer = ({ condition, delayTime = 3000 }) => {
+  const { globalState, stopCurrentAudio, playNewAudio } =
     useContext(AppStateContext);
 
   // when audio playing finishes, some cleanup code runs
   useEffect(() => {
-    const handleAudioEnded = () => {
-      setGlobalState((prevState) => ({
-        ...prevState,
-        audioPlayDone: true,
-      }));
-      console.log("Audio playback has finished");
-    };
-
     if (globalState.stopCurrentlyPlayingAudio === true) {
       stopCurrentAudio();
     }
@@ -29,11 +21,7 @@ const AudioPlayer = ({ audioFile, condition, delayTime = 3000 }) => {
     let timer;
     if (condition) {
       timer = setTimeout(() => {
-        playNewAudio(audioFile);
-
-        // Attach the event listener after starting playback
-        const audio = new Audio(audioFile);
-        audio.addEventListener("ended", handleAudioEnded);
+        playNewAudio();
       }, delayTime);
     }
 
@@ -41,7 +29,7 @@ const AudioPlayer = ({ audioFile, condition, delayTime = 3000 }) => {
     return () => {
       clearTimeout(timer);
     };
-  }, [audioFile, condition, delayTime, globalState.stopCurrentlyPlayingAudio]);
+  }, [condition, globalState.stopCurrentlyPlayingAudio === true]);
 
   return <div style={{ visibility: "hidden" }}>AudioPlayer</div>;
 };

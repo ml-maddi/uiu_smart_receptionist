@@ -228,9 +228,7 @@ const Mic2 = () => {
       <Stack direction="column" spacing={1}>
         <Typography variant="h4" sx={{ fontWeight: "bold" }}>
           {globalState.userName
-            ? globalState.currentLanguage === "bn"
-              ? globalState.userName
-              : globalState.userNameEn
+            ? globalState.userName
             : translations[globalState.currentLanguage].userName}
         </Typography>
         <Typography variant="h5" color="#eb8908">

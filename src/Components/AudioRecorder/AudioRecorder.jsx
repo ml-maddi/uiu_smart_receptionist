@@ -6,6 +6,7 @@ import { Button, IconButton } from "@mui/material";
 import React, { useState, useRef, useContext } from "react";
 import MicNoneIcon from "@mui/icons-material/MicNone";
 import { AppStateContext } from "../../AppContext";
+import { NameRecordingStatus, NameProcessingStatus } from "../../Constants";
 const AudioRecorder = () => {
   // some state variables to handle audio playing logics
   const [isRecording, setIsRecording] = useState(false);
@@ -14,11 +15,22 @@ const AudioRecorder = () => {
   const silenceTimeout = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
-  const { setGlobalState } = useContext(AppStateContext);
+  const { globalState, setGlobalState } = useContext(AppStateContext);
 
   // func gets called upon start of the recording
   const startRecording = async () => {
     try {
+      setGlobalState((prevState) => ({
+        ...prevState,
+        componentStates: {
+          ...prevState.componentStates,
+          getStartedModalStates: {
+            ...prevState.componentStates.getStartedModalStates,
+            nameRecordingStatus: NameRecordingStatus.STARTED,
+          },
+        },
+      }));
+
       // Reset any previous audio context and analyzer
       if (audioContextRef.current) {
         audioContextRef.current.close();
@@ -60,7 +72,7 @@ const AudioRecorder = () => {
                 ...prevState.componentStates,
                 getStartedModalStates: {
                   ...prevState.componentStates.getStartedModalStates,
-                  nameAudioProcessing: true,
+                  nameRecordingStatus: NameRecordingStatus.DONE,
                 },
               },
             }));
@@ -86,6 +98,16 @@ const AudioRecorder = () => {
     ) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setGlobalState((prevState) => ({
+        ...prevState,
+        componentStates: {
+          ...prevState.componentStates,
+          getStartedModalStates: {
+            ...prevState.componentStates.getStartedModalStates,
+            nameRecordingStatus: NameRecordingStatus.DONE,
+          },
+        },
+      }));
     }
     // Clear timeout if it exists
     if (silenceTimeout.current) {
@@ -121,60 +143,20 @@ const AudioRecorder = () => {
 
   return (
     <IconButton
-      sx={{
-        width: "4rem",
-        height: "4rem",
-        borderRadius: "50%",
-        border: "2px solid gray",
-        bgcolor: isRecording === false ? "white" : "orange",
-      }}
       onClick={isRecording === false ? startRecording : stopRecording}
     >
       <MicNoneIcon
         sx={{
+          width: "3rem",
+          height: "3rem",
+          borderRadius: "50%",
+          border: "2px solid gray",
           fontSize: "3rem",
+          bgcolor: isRecording === false ? "white" : "orange",
           color: isRecording === false ? "gray" : "white",
         }}
       />
     </IconButton>
-    // <>
-    //   {isRecording === false ? (
-    //     <IconButton
-    //       sx={{
-    //         width: "4rem",
-    //         height: "4rem",
-    //         borderRadius: "50%",
-    //         border: "2px solid gray",
-    //       }}
-    //       onClick={startRecording}
-    //     >
-    //       <MicNoneIcon
-    //         sx={{
-    //           fontSize: "3rem",
-    //           color: "gray",
-    //         }}
-    //       />
-    //     </IconButton>
-    //   ) : (
-    //     <IconButton
-    //       sx={{
-    //         width: "4rem",
-    //         height: "4rem",
-    //         borderRadius: "50%",
-    //         bgcolor: "orange",
-    //         border: "2px solid gray",
-    //       }}
-    //       onClick={stopRecording}
-    //     >
-    //       <MicNoneIcon
-    //         sx={{
-    //           fontSize: "3rem",
-    //           color: "white",
-    //         }}
-    //       />
-    //     </IconButton>
-    //   )}
-    // </>
   );
 };
 

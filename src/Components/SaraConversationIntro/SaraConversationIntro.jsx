@@ -17,34 +17,33 @@ import Mic1 from "./Mic1";
 // contexts
 import { AppStateContext } from "../../AppContext";
 import ListeningIntro from "./ListeningIntro";
-import { translations } from "../../Constants";
+import { AudioPlayingStatus, translations } from "../../Constants";
 import { Tooltip } from "react-tooltip";
-import AudioPlayer from "../AudioPlayer/AudioPlayer";
-
-import welcomeBn from "../../Assets/audios/sara_welcome_bn.mp3";
-import welcomeEn from "../../Assets/audios/sara_welcome_en.mp3";
 
 import questionAskBn from "../../Assets/audios/question_ask_bn.wav";
 import questionAskEn from "../../Assets/audios/question_ask_en.wav";
 
 const SaraConversationIntro = () => {
-  const { globalState, setGlobalState } = useContext(AppStateContext);
+  const { globalState, setGlobalState, addAudioToQueue, playNewAudio } =
+    useContext(AppStateContext);
   const [condition, setCondition] = useState(null);
   const [currentAudio, setCurrentAudio] = useState(null);
   const audioRef = useRef(null);
 
+  const questionAskAudioData = {
+    name: "Question_ask audio",
+    file: globalState.currentLanguage === "bn" ? questionAskBn : questionAskEn,
+    delay: 300,
+    status: AudioPlayingStatus.NOT_STARTED,
+  };
+
   useEffect(() => {
     if (globalState.componentStates.getStartedModalStates.openModal === false) {
-      if (globalState.userId !== null) {
-        setCondition(
-          globalState.pageStates.getStartedStates.welcomeAudioPlayDone === false
-        );
-        // plays audio to tell user that they can ask question by tapping mic button
-        if (globalState.currentLanguage === "bn") {
-          setCurrentAudio(questionAskBn);
-        } else if (globalState.currentLanguage === "en") {
-          setCurrentAudio(questionAskEn);
-        }
+      if (
+        globalState.userId !== null &&
+        globalState.pageStates.getStartedStates.welcomeAudioPlayDone
+      ) {
+        addAudioToQueue(questionAskAudioData);
 
         // showing tool tip over mic button to show that they can ask question by tapping mic button
         const showTooltipTimer = setTimeout(() => {
@@ -80,10 +79,19 @@ const SaraConversationIntro = () => {
     }
   }, [
     globalState.userId,
-    globalState.pageStates.getStartedStates.welcomeAudioPlayDone,
     globalState.componentStates.getStartedModalStates.openModal,
-    globalState.audioPlayDone,
+    globalState.pageStates.getStartedStates.welcomeAudioPlayDone,
   ]);
+
+  useEffect(() => {
+    if (
+      globalState.audioPlayingData !== null &&
+      globalState.audioPlayingData.name === "Question_ask audio" &&
+      globalState.audioPlayingData.status === AudioPlayingStatus.NOT_STARTED
+    ) {
+      playNewAudio();
+    }
+  }, [globalState.audioPlayingData]);
 
   return (
     <Box
@@ -102,9 +110,6 @@ const SaraConversationIntro = () => {
         transition: "height 0.3s ease", // Add smooth animation here
       }}
     >
-      {condition && currentAudio && (
-        <AudioPlayer audioFile={currentAudio} condition delayTime={100} />
-      )}
       <Tooltip
         id="my-tooltip"
         content="Tap the mic button to ask question"
@@ -117,23 +122,7 @@ const SaraConversationIntro = () => {
         }}
         isOpen={globalState.pageStates.getStartedStates.showMicToolTip}
       />
-      {/* <Tooltip
-        sx={(theme) => ({
-          zIndex: theme.zIndex.drawer + 1,
-          bgcolor: "black!important",
-          fontSize: "20rem",
-        })}
-        // PopperProps={{
-        //   disablePortal: true,
-        // }}
-        // placement="bottom"
-        open={globalState.pageStates.getStartedStates.showMicToolTip === false}
-        disableFocusListener
-        disableHoverListener
-        disableTouchListener
-        TransitionComponent={Zoom}
-        title={translations[globalState.currentLanguage].loginText}
-      > */}
+
       <Box
         // data-tooltip-content="Click me!"
         sx={{
