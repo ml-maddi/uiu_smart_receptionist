@@ -16,17 +16,38 @@ import StepComponent from "../../Components/StepComponent/StepComponent";
 import AlertNotifier from "../../Components/AlertNotifier/AlertNotifier";
 import SaraConversationIntro from "../../Components/SaraConversationIntro/SaraConversationIntro";
 import ContinuousFaceDetect from "../../Components/ContinuousFaceDetect/ContinuousFaceDetect";
+import { DifferentPages, DifferentStages, initState } from "../../Constants";
 const GetStartedPage = () => {
   const { globalState, setGlobalState } = useContext(AppStateContext);
 
   useEffect(() => {
     setGlobalState((prevState) => ({
       ...prevState,
-      currentPage: "GetStarted",
+      currentPage: DifferentPages.GET_STARTED,
+      currentStage: DifferentStages.USER_IN_GET_STARTED_PAGE,
     }));
 
     // setGlobalState({ ...globalState, currentPage: "welcome" });
   }, [setGlobalState]);
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (
+  //       globalState.currentStage ===
+  //       DifferentStages.SIGNED_USER_IN_GET_STARTED_PAGE
+  //     ) {
+  //       // Check globalState value and call another function
+  //       console.log("reset timer 3 started for signed in user");
+  //       setGlobalState((prevState) => ({
+  //         ...initState,
+  //         currentPage: DifferentPages.GET_STARTED,
+  //         currentStage: DifferentStages.USER_IN_GET_STARTED_PAGE,
+  //       }));
+  //     }
+  //   }, 10000); // 10 seconds
+  //   return () => clearTimeout(timer);
+  // }, [globalState.currentStage]);
+
   return (
     <Box
       sx={{

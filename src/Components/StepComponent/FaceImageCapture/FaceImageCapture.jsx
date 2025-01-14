@@ -21,7 +21,11 @@ import {
   stopPlayingAudio,
 } from "../../../Functions";
 import { Tooltip } from "react-tooltip";
-import { AudioPlayingStatus, translations } from "../../../Constants";
+import {
+  AudioPlayingStatus,
+  DifferentStages,
+  translations,
+} from "../../../Constants";
 
 import retakeContinueBn from "../../../Assets/audios/face_retake_contine_bn.wav";
 import retakeContinueEn from "../../../Assets/audios/face_retake_contine_en.wav";
@@ -35,12 +39,20 @@ const FaceImageCapture = () => {
   const { globalState, setGlobalState, addAudioToQueue, playNewAudio } =
     useContext(AppStateContext);
   const resetCapture = () => {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      currentStage: DifferentStages.USER_USING_IMAGE_TAKING_WINDOW_1,
+    }));
     setIsPreview(false);
     setCapturedImage(null);
     setIsCapturing(false);
   };
 
   const startCapture = () => {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      currentStage: "",
+    }));
     stopPlayingAudio(setGlobalState);
     setIsCapturing(true);
     setIsPreview(false);
@@ -118,6 +130,10 @@ const FaceImageCapture = () => {
     if (isPreview === true) {
       // if user face image is showing in the preview window,
       // show a tooltip first about two buttons usage
+      setGlobalState((prevState) => ({
+        ...prevState,
+        currentStage: DifferentStages.USER_USING_IMAGE_RETAKING_WINDOW_2,
+      }));
       const showTooltipTimer = setTimeout(() => {
         setGlobalState((prevState) => ({
           ...prevState,
@@ -259,6 +275,12 @@ const FaceImageCapture = () => {
               {translations[globalState.currentLanguage].retakePhotoBtnText}
             </Button>
             <Button
+              className={
+                globalState.currentStage ===
+                DifferentStages.USER_USING_IMAGE_RETAKING_WINDOW_2
+                  ? "animate__animated animate__pulse animate__infinite"
+                  : ""
+              }
               data-tooltip-id="face_continue-tooltip"
               variant="contained"
               sx={{
@@ -308,6 +330,12 @@ const FaceImageCapture = () => {
           </Box>
           <Button
             variant="contained"
+            className={
+              globalState.currentStage ===
+              DifferentStages.USER_USING_IMAGE_TAKING_WINDOW_1
+                ? "animate__animated animate__pulse animate__infinite"
+                : ""
+            }
             sx={{
               color: "white",
               bgcolor: "orange",

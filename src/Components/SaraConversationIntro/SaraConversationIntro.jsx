@@ -17,7 +17,11 @@ import Mic1 from "./Mic1";
 // contexts
 import { AppStateContext } from "../../AppContext";
 import ListeningIntro from "./ListeningIntro";
-import { AudioPlayingStatus, translations } from "../../Constants";
+import {
+  AudioPlayingStatus,
+  DifferentStages,
+  translations,
+} from "../../Constants";
 import { Tooltip } from "react-tooltip";
 
 import questionAskBn from "../../Assets/audios/question_ask_bn.wav";
@@ -42,6 +46,10 @@ const SaraConversationIntro = () => {
     if (globalState.componentStates.getStartedModalStates.openModal === false) {
       if (globalState.userId !== null && globalState.userName !== null) {
         console.log(globalState.userName);
+        setGlobalState((prevState) => ({
+          ...prevState,
+          currentStage: DifferentStages.SIGNED_USER_IN_GET_STARTED_PAGE,
+        }));
         speakNameOut(globalState, setGlobalState, addAudioToQueue);
       }
     }

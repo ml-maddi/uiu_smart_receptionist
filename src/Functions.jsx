@@ -5,6 +5,7 @@ import {
   translations,
   QuestionEditingStatus,
   AudioPlayingStatus,
+  DifferentPages,
 } from "./Constants";
 
 export const getPlaceholderText = (globalState) => {
@@ -488,7 +489,9 @@ const saveToFile = (globalState) => {
 
 export const handleFeedbackSubmitting = async (globalState, setGlobalState) => {
   toggleFeedbackPage(setGlobalState);
-  saveToFile(globalState);
+  console.log(globalState.componentStates.feedbackStates.allFeedbackStates);
+  await submitSurveyToDB(globalState);
+  // saveToFile(globalState);
   setGlobalState((prevState) => ({
     ...prevState,
     pageStates: {
@@ -644,6 +647,7 @@ export const QuestionAnswering = async (
       ); // Perform the task
       console.log("Background task complete");
     })();
+    await addQuestionAnswerToDB(globalState.userId, text, botResponse.text);
   } catch (error) {
     const errorMessage =
       error.code === "ERR_NETWORK"
@@ -720,7 +724,7 @@ export const QuestionAsking = (
               },
             }));
           } else {
-            if (globalState.currentPage === "GetStarted") {
+            if (globalState.currentPage === DifferentPages.GET_STARTED) {
               setTimeout(() => {
                 navigate("/conversation");
               }, 500); // 2000ms = 2 seconds
@@ -740,7 +744,7 @@ export const QuestionAsking = (
             console.log(transcript);
           }
         } else {
-          if (globalState.currentPage === "GetStarted") {
+          if (globalState.currentPage === DifferentPages.GET_STARTED) {
             setTimeout(() => {
               navigate("/conversation");
             }, 500); // 2000ms = 2 seconds
@@ -889,7 +893,7 @@ export const isFaceDetectedContinuous = async (imgData, setGlobalState) => {
       image: base64data,
     });
 
-    console.log("Response:", response.data.message);
+    // console.log("Response:", response.data.message);
 
     const noface = "no face";
     let msg = response.data.message;
@@ -1307,4 +1311,80 @@ export const handleNameSpeaking = (globalState, setGlobalState, base64data) => {
         },
       }))
     );
+};
+
+export const addQuestionAnswerToDB = (user_id, question, answer) => {
+  axios
+    .post(`http://localhost:8000/add_qa_pair_to_db`, {
+      user_id,
+      query: question,
+      answer,
+    })
+    .then(async (response) => {
+      // console.log(response.data);
+      let msg = response.data.message;
+      console.log(msg);
+      // if (name !== "name not there") {
+      //   setGlobalState((prevState) => ({
+      //     ...prevState,
+      //     userName: name,
+      //   }));
+      // }
+    })
+    .catch((error) => {
+      const errorMessage =
+        error.code === "ERR_NETWORK"
+          ? "Network error! Please check your connection."
+          : "Sorry, there was an error adding qa to db!";
+
+      console.error("There was an error adding qa to db!", error);
+      // setGlobalState((prevState) => ({
+      //   ...prevState,
+      //   notificationStates: {
+      //     ...prevState.notificationStates,
+      //     showNotification: true,
+      //     notificationType: "error",
+      //     notificationMessage: errorMessage,
+      //   },
+      // }));
+    });
+};
+
+export const submitSurveyToDB = (globalState) => {
+  axios
+    .post(`http://localhost:8000/add-feedback`, {
+      user_id: globalState.userId,
+      feedbacks: globalState.componentStates.feedbackStates.allFeedbackStates,
+    })
+    .then(async (response) => {
+      // console.log(response.data);
+      let msg = response.data.message;
+      console.log(msg);
+      // if (name !== "name not there") {
+      //   setGlobalState((prevState) => ({
+      //     ...prevState,
+      //     userName: name,
+      //   }));
+      // }
+    })
+    .catch((error) => {
+      const errorMessage =
+        error.code === "ERR_NETWORK"
+          ? "Network error! Please check your connection."
+          : "Sorry, there was an error adding survey submission to db!";
+
+      console.error(
+        "There was an error adding survey submission to db!",
+        error
+      );
+      // setGlobalState((prevState) => ({
+      //   ...prevState,
+      //   notificationStates: {
+      //     ...prevState.notificationStates,
+      //     showNotification: true,
+      //     notificationType: "error",
+      //     notificationMessage: errorMessage,
+      //   },
+      // }));
+    });
 };

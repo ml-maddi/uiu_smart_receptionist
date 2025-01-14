@@ -10,7 +10,12 @@ import { isFaceDetectedContinuous } from "../../Functions";
 
 import welcomeBn from "../../Assets/audios/sara_welcome_bn.mp3";
 import welcomeEn from "../../Assets/audios/sara_welcome_en.mp3";
-import { AudioPlayingStatus } from "../../Constants";
+import {
+  AudioPlayingStatus,
+  DifferentPages,
+  DifferentStages,
+  initState,
+} from "../../Constants";
 
 const Container = styled.div`
   display: flex;
@@ -67,7 +72,9 @@ const ContinuousFaceDetect = () => {
     const stopWebcam = () => {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
-        videoRef.current.srcObject = null; // add
+        if (videoRef.current) {
+          videoRef.current.srcObject = null; // Ensure videoRef.current exists
+        }
         setStream(null); // add
       }
 
@@ -127,7 +134,8 @@ const ContinuousFaceDetect = () => {
     ctx.drawImage(video, 0, 0);
     const imgData = canvas.toDataURL("image/png");
 
-    console.log(imgData);
+    // console.log(imgData);
+    console.log("Got image data");
 
     const faceDetected = await isFaceDetectedContinuous(
       imgData,
@@ -152,6 +160,57 @@ const ContinuousFaceDetect = () => {
       playNewAudio();
     }
   }, [globalState.audioPlayingData]);
+
+  // useEffect(() => {
+  //   if (
+  //     globalState.audioPlayingData !== null &&
+  //     globalState.audioPlayingData.name === "Welcome audio" &&
+  //     globalState.audioPlayingData.status === AudioPlayingStatus.DONE
+  //   ) {
+  //     console.log("I am in timer section");
+  //     // Start a 1-minute timer
+  //     const timer = setTimeout(() => {
+  //       // Check globalState value and call another function
+  //       console.log("reset timer started");
+  //       if (globalState.userId === null) {
+  //         setGlobalState((prevState) => ({
+  //           ...initState,
+  //           currentPage: DifferentPages.GET_STARTED,
+  //         }));
+  //       }
+  //     }, 180000); // 60 seconds
+
+  //     // Cleanup the timer if the component unmounts or the dependency changes
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [globalState.audioPlayingData]);
+
+  // useEffect(() => {
+  //   if (
+  //     globalState.userInFront === true &&
+  //     globalState.currentPage === DifferentPages.GET_STARTED
+  //   ) {
+  //     console.log("I am in timer 2 section");
+  //     // Start a 1-minute timer
+  //     const timer = setTimeout(() => {
+  //       if (
+  //         globalState.currentStage === DifferentStages.USER_IN_GET_STARTED_PAGE
+  //       ) {
+  //         // Check globalState value and call another function
+  //         console.log(globalState.currentStage);
+  //         console.log("reset timer 2 started");
+  //         setGlobalState((prevState) => ({
+  //           ...initState,
+  //           currentPage: DifferentPages.GET_STARTED,
+  //           currentStage: DifferentStages.USER_IN_GET_STARTED_PAGE,
+  //         }));
+  //       }
+  //     }, 15000); // 10 seconds
+
+  //     // Cleanup the timer if the component unmounts or the dependency changes
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [globalState.userInFront]);
 
   return (
     <Container>

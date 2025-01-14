@@ -12,6 +12,7 @@ import vec1 from "../../Assets/vector-7164.svg";
 // contexts
 import { useContext } from "react";
 import { AppStateContext } from "../../AppContext";
+import { DifferentPages } from "../../Constants";
 const SaraAvatar = () => {
   // const { currentPage } = useContext(CurrentPageContext);
   const { globalState } = useContext(AppStateContext);
@@ -22,7 +23,8 @@ const SaraAvatar = () => {
         position: "absolute",
         height: "80%",
         // bgcolor: "#333",
-        top: globalState.currentPage === "GetStarted" ? "15rem" : 0,
+        top:
+          globalState.currentPage === DifferentPages.GET_STARTED ? "15rem" : 0,
 
         width: "100%",
         // transform:
@@ -30,7 +32,7 @@ const SaraAvatar = () => {
         //     ? "translate(0.6rem,0)"
         //     : null,
         transition:
-          globalState.currentPage === "conversation"
+          globalState.currentPage === DifferentPages.CONVERSATION
             ? "top 0.8s ease, left 0.8s ease "
             : null, // Animate on load
       }}
@@ -43,10 +45,20 @@ const SaraAvatar = () => {
 
             // height: globalState.currentPage === "GetStarted" ? "60%" : "30%",
             // objectFit: "contain",
-            width: globalState.currentPage === "GetStarted" ? "85%" : "42%",
-            top: globalState.currentPage === "GetStarted" ? "30%" : "18rem",
+            width:
+              globalState.currentPage === DifferentPages.GET_STARTED
+                ? "85%"
+                : "42%",
+            top:
+              globalState.currentPage === DifferentPages.GET_STARTED
+                ? "30%"
+                : "18rem",
           }}
-          src={globalState.currentPage === "GetStarted" ? union : vec1}
+          src={
+            globalState.currentPage === DifferentPages.GET_STARTED
+              ? union
+              : vec1
+          }
         />
 
         {/* sets different positioning based on which page its getting showed */}
@@ -54,8 +66,14 @@ const SaraAvatar = () => {
           style={{
             position: "absolute",
             right: "3rem",
-            height: globalState.currentPage === "GetStarted" ? "70%" : "35%",
-            top: globalState.currentPage === "GetStarted" ? null : "5rem",
+            height:
+              globalState.currentPage === DifferentPages.GET_STARTED
+                ? "70%"
+                : "35%",
+            top:
+              globalState.currentPage === DifferentPages.GET_STARTED
+                ? null
+                : "5rem",
           }}
           src={avatar}
         />

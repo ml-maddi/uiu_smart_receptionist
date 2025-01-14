@@ -1,6 +1,7 @@
 import React, { createContext, useState } from "react";
 import {
   AudioPlayingStatus,
+  DifferentPages,
   NameProcessingStatus,
   NameRecordingStatus,
 } from "./Constants";
@@ -13,7 +14,8 @@ let timer;
 export const AppStateProvider = ({ children }) => {
   const [globalState, setGlobalState] = useState({
     userInFront: false,
-    currentPage: "Start",
+    currentPage: DifferentPages.START,
+    currentStage: "",
     currentImageData: null,
     currentLanguage: "bn",
     currentNameData: null,
@@ -51,6 +53,7 @@ export const AppStateProvider = ({ children }) => {
         showThankYou: false,
         showKeyboard: false,
         keyboardRef: null,
+        stopListening: false,
       },
     },
     componentStates: {
@@ -87,9 +90,10 @@ export const AppStateProvider = ({ children }) => {
     if (globalState.audioInstance !== null) {
       globalState.audioInstance.pause();
       globalState.audioInstance.currentTime = 0; // Reset to the start
+      console.log("I was called stop audio from here");
     }
     if (
-      globalState.currentPage === "GetStarted" &&
+      globalState.currentPage === DifferentPages.GET_STARTED &&
       globalState.audioPlayingData.name === "Welcome audio" &&
       !globalState.pageStates.getStartedStates.welcomeAudioPlayDone
     ) {
@@ -105,6 +109,7 @@ export const AppStateProvider = ({ children }) => {
       }));
     }
     if (
+      globalState.audioPlayingData !== null &&
       globalState.audioPlayingData.name === "Question_ask audio" &&
       !globalState.pageStates.getStartedStates.questionAskAudioPlayDone
     ) {
@@ -120,6 +125,7 @@ export const AppStateProvider = ({ children }) => {
       }));
     }
     if (
+      globalState.audioPlayingData !== null &&
       globalState.audioPlayingData.name === "Name audio" &&
       !globalState.pageStates.getStartedStates.greetNameAudioPlayDone
     ) {

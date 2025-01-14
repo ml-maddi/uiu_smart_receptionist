@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 import React, { useState, useEffect, useContext } from "react";
 
 // constants
-import { banglaDigits } from "../../../../Constants";
+import { banglaDigits, DifferentPages } from "../../../../Constants";
 
 // contexts
 import { AppStateContext } from "../../../../AppContext";
@@ -63,13 +63,17 @@ const TimeDisplay = () => {
   return (
     <Box sx={{ display: "flex", alignItems: "baseline" }}>
       <Typography
-        variant={globalState.currentPage === "GetStarted" ? "h2" : "h3"}
+        variant={
+          globalState.currentPage === DifferentPages.GET_STARTED ? "h2" : "h3"
+        }
         sx={{ mr: 1, color: "#eb8908", fontWeight: 600 }}
       >
         {time.hoursMinutes}
       </Typography>
       <Typography
-        variant={globalState.currentPage === "GetStarted" ? "h3" : "h4"}
+        variant={
+          globalState.currentPage === DifferentPages.GET_STARTED ? "h3" : "h4"
+        }
         sx={{ color: "#000000de" }}
       >
         {time.period}

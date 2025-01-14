@@ -36,6 +36,10 @@ export const translations = {
       "How satisfied are you with the ease of navigating through the system?",
       "How satisfied are you with your overall experience using the Smart Reception System compared to a human receptionist?",
     ],
+    listeningStopBtnText: "Stop Asking",
+    surveyBtnText: "End Conversation",
+    noMessageTxt: "No Questions Yet",
+    surveySubmitBtnText: "Submit",
   },
   bn: {
     welcome1: "স্বাগতম,আমি সারা! ইউআইইউ ",
@@ -76,6 +80,10 @@ export const translations = {
       "সিস্টেমের মাধ্যমে নেভিগেট করা কতটা সহজ ছিল?",
       "একজন মানব রিসেপশনিস্টের তুলনায় স্মার্ট রিসেপশন সিস্টেম ব্যবহারের আপনার সামগ্রিক অভিজ্ঞতা কেমন?",
     ],
+    listeningStopBtnText: "প্রশ্ন শেষ করুন",
+    surveyBtnText: "মতামত দিন",
+    noMessageTxt: "এখনও কোনও প্রশ্ন নেই",
+    surveySubmitBtnText: "সাবমিট",
   },
 };
 
@@ -126,9 +134,30 @@ export const QuestionEditingStatus = {
   DONE: "done",
   NOT_STARTED: "not_started",
 };
+export const DifferentPages = {
+  START: "start",
+  GET_STARTED: "GetStarted",
+  CONVERSATION: "Conversation",
+  WELCOME: "welcome",
+};
+export const DifferentStages = {
+  USER_IN_GET_STARTED_PAGE: "UserInGetStartedPage",
+  USER_PRESSED_GETSTARTED_BTN_IN_GET_STARTED_PAGE:
+    "UserPressedGetStartedBtnInGetStartedPage",
+  USER_USING_IMAGE_TAKING_WINDOW_1: "UserUsingImageTakingWindow1",
+  USER_USING_IMAGE_RETAKING_WINDOW_2: "UserUsingImageReTakingWindow2",
+  USER_USING_NAME_INPUTTING_WINDOW: "UserUsingNameInputtingWindow",
+  SIGNED_USER_IN_GET_STARTED_PAGE: "SignedUserInGetStartedPage",
+  SIGNED_USER_ASKING_IN_GET_STARTED_PAGE: "SignedUserAskingInGetStartedPage",
+  SIGNED_USER_IN_CONVERSATION_PAGE: "SignedUserInConversationPage",
+  SIGNED_USER_ASKING_IN_CONVERSATION_PAGE: "SignedUserAskingInConversationPage",
+  SIGNED_USER_ASKED_IN_CONVERSATION_PAGE: "SignedUserAskedInConversationPage",
+};
+
 export const initState = {
   userInFront: false,
-  currentPage: "Start",
+  currentPage: DifferentPages.START,
+  currentStage: "",
   currentImageData: null,
   currentLanguage: "bn",
   currentNameData: null,
@@ -166,6 +195,7 @@ export const initState = {
       showThankYou: false,
       showKeyboard: false,
       keyboardRef: null,
+      stopListening: false,
     },
   },
   componentStates: {

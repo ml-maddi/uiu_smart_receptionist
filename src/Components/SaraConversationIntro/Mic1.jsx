@@ -10,6 +10,9 @@ import micBg1 from "../../Assets/rectangle-6.svg";
 import { AppStateContext } from "../../AppContext";
 import { useNavigate } from "react-router-dom";
 import { handleGetStartedMicBtnPressed, QuestionAsking } from "../../Functions";
+import { DifferentStages } from "../../Constants";
+import StopCircleOutlinedIcon from "@mui/icons-material/StopCircleOutlined";
+import { StopCircleRounded } from "@mui/icons-material";
 
 // No audio checking and notifying
 const containsBangla = (str) => /[\u0980-\u09FF]/.test(str);
@@ -162,12 +165,12 @@ const Mic1 = () => {
       analyserRef.current.getByteTimeDomainData(buffer);
       const isSilent = buffer.every((value) => Math.abs(value - 128) < 5);
 
-      if (isSilent) {
+      if (isSilent && isRecording) {
         if (!silentStart) {
           silentStart = performance.now(); // Start silence timer
           console.log("Silence detected. Timer started.");
-        } else if (performance.now() - silentStart >= 7000) {
-          console.log("10 seconds of silence detected. Stopping recording.");
+        } else if (performance.now() - silentStart >= 5500) {
+          console.log("5 seconds of silence detected. Stopping recording.");
           stopRecording();
           return;
         } else {
@@ -191,6 +194,12 @@ const Mic1 = () => {
 
   return (
     <Box
+      className={
+        globalState.currentStage ===
+        DifferentStages.SIGNED_USER_IN_GET_STARTED_PAGE
+          ? "animate__animated animate__pulse animate__infinite"
+          : ""
+      }
       data-tooltip-id="my-tooltip"
       sx={{
         display: "flex",
@@ -208,7 +217,35 @@ const Mic1 = () => {
         isRecording === false ? startRecording() : stopRecording()
       }
     >
-      <MicNoneIcon sx={{ color: "#fff", fontSize: 90, ml: 4 }} />
+      {isRecording ? (
+        <StopCircleOutlinedIcon
+          className={
+            globalState.currentStage ===
+            DifferentStages.SIGNED_USER_IN_GET_STARTED_PAGE
+              ? "animate__animated animate__pulse animate__infinite"
+              : ""
+          }
+          sx={{
+            color: "revert",
+            fontSize: 90,
+            ml: 4,
+          }}
+        />
+      ) : (
+        <MicNoneIcon
+          className={
+            globalState.currentStage ===
+            DifferentStages.SIGNED_USER_IN_GET_STARTED_PAGE
+              ? "animate__animated animate__pulse animate__infinite"
+              : ""
+          }
+          sx={{
+            color: "#fff",
+            fontSize: 90,
+            ml: 4,
+          }}
+        />
+      )}
     </Box>
   );
 };

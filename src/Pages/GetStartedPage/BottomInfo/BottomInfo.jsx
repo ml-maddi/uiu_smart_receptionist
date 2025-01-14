@@ -1,9 +1,13 @@
 // portion shown at the bottom of the get started page when there is no user infront of the system
 
 import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 // constants
-import { translations } from "../../../Constants";
+import {
+  DifferentPages,
+  DifferentStages,
+  translations,
+} from "../../../Constants";
 import { AppStateContext } from "../../../AppContext";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 const BottomInfo = () => {
@@ -12,6 +16,7 @@ const BottomInfo = () => {
   const handleGetStartedBtnClick = () => {
     setGlobalState((prevState) => ({
       ...prevState,
+      currentStage: DifferentStages.USER_USING_IMAGE_TAKING_WINDOW_1,
       componentStates: {
         ...prevState.componentStates,
         getStartedModalStates: {
@@ -30,6 +35,28 @@ const BottomInfo = () => {
     }, 1000); // 2000ms = 2 seconds
   };
 
+  // useEffect(() => {
+  //   if (globalState.currentPage === DifferentPages.GET_STARTED) {
+  //     setGlobalState((prevState) => ({
+  //       ...prevState,
+  //       currentStage: DifferentStages.USER_IN_GET_STARTED_PAGE,
+  //     }));
+  //   }
+  // }, [globalState.currentPage]);
+
+  // useEffect(() => {
+  //   // setGlobalState((prevState) => ({
+  //   //   ...prevState,
+  //   //   currentStage: DifferentStages.USER_IN_GET_STARTED_PAGE,
+  //   // }));
+  //   return () => {
+  //     setGlobalState((prevState) => ({
+  //       ...prevState,
+  //       currentStage: DifferentStages,
+  //     }));
+  //   };
+  // }, []);
+
   return (
     <Box
       bgcolor="white"
@@ -37,7 +64,10 @@ const BottomInfo = () => {
       height="25%"
       sx={{
         mx: "auto",
-        mt: globalState.currentPage === "GetStarted" ? "3rem" : "1.5rem",
+        mt:
+          globalState.currentPage === DifferentPages.GET_STARTED
+            ? "3rem"
+            : "1.5rem",
         px: 4,
         py: 3,
         borderRadius: "2rem",
@@ -77,6 +107,12 @@ const BottomInfo = () => {
           </Typography>
         </Stack>
         <Button
+          className={
+            globalState.currentStage ===
+            DifferentStages.USER_IN_GET_STARTED_PAGE
+              ? "animate__animated animate__pulse animate__infinite"
+              : ""
+          }
           variant="contained"
           sx={{
             fontSize: "2rem",

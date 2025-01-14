@@ -2,7 +2,12 @@ import React, { useState, useEffect, useContext } from "react";
 import { Box, Typography } from "@mui/material";
 
 // constants
-import { banglaDays, banglaMonths, banglaDigits } from "../../../../Constants";
+import {
+  banglaDays,
+  banglaMonths,
+  banglaDigits,
+  DifferentPages,
+} from "../../../../Constants";
 
 // contexts
 import { AppStateContext } from "../../../../AppContext";
@@ -71,17 +76,27 @@ const DateDisplay = () => {
   return (
     <Box sx={{ display: "flex", alignItems: "baseline" }}>
       <Typography
-        variant={globalState.currentPage === "GetStarted" ? "h5" : "h6"}
+        variant={
+          globalState.currentPage === DifferentPages.GET_STARTED ? "h5" : "h6"
+        }
         sx={{
-          color: globalState.currentPage === "GetStarted" ? "#000000a6" : null,
+          color:
+            globalState.currentPage === DifferentPages.GET_STARTED
+              ? "#000000a6"
+              : null,
         }}
       >
         {dateInfo.day}
       </Typography>
       <Typography
-        variant={globalState.currentPage === "GetStarted" ? "h5" : "h6"}
+        variant={
+          globalState.currentPage === DifferentPages.GET_STARTED ? "h5" : "h6"
+        }
         sx={{
-          color: globalState.currentPage === "GetStarted" ? "#000000a6" : null,
+          color:
+            globalState.currentPage === DifferentPages.GET_STARTED
+              ? "#000000a6"
+              : null,
         }}
       >
         , {dateInfo.date}

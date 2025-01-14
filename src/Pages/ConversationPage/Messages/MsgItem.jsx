@@ -147,6 +147,9 @@ const MsgItem = ({ user_type, editingStatus, children }) => {
           ) : (
             <Stack direction="column" mb="2rem">
               <TextField
+                multiline={true}
+                minRows={2}
+                maxRows={5}
                 value={Question}
                 onChange={handleInputChange}
                 onFocus={() => {

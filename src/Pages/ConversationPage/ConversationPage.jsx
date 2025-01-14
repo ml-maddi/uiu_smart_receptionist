@@ -13,6 +13,7 @@ import AlertNotifier from "../../Components/AlertNotifier/AlertNotifier";
 import ListeningOverlay from "./ListeningOverlay";
 import FeedbackPage from "../FeedbackPage/FeedbackPage";
 import ShowThankYou from "../../Components/ShowThankYou";
+import { DifferentPages } from "../../Constants";
 
 const ConversationPage = () => {
   // current page handling
@@ -20,7 +21,7 @@ const ConversationPage = () => {
   useEffect(() => {
     setGlobalState((prevState) => ({
       ...prevState,
-      currentPage: "Conversation",
+      currentPage: DifferentPages.CONVERSATION,
     }));
 
     // setGlobalState({ ...globalState, currentPage: "conversation" });

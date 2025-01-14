@@ -9,6 +9,7 @@ import UserMsgItem from "../ConversationPage/Messages/MsgItem";
 import Mic2 from "./Mic2";
 import { AppStateContext } from "../../AppContext";
 import { toggleFeedbackPage } from "../../Functions";
+import { translations } from "../../Constants";
 
 const fabStyle = {
   position: "absolute",
@@ -53,7 +54,7 @@ const MessagesArea = () => {
             fontWeight: "bold",
           }}
         />
-        End Conversation
+        {translations[globalState.currentLanguage].surveyBtnText}
       </Fab>
       <Box
         sx={{

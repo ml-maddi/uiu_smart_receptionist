@@ -14,7 +14,7 @@ import userImg from "../../Assets/user-photo.png";
 import "animate.css";
 
 // constants
-import { initState, translations } from "../../Constants";
+import { DifferentPages, initState, translations } from "../../Constants";
 // contexts
 
 import { useNavigate } from "react-router-dom";
@@ -39,7 +39,7 @@ const GuestInfo = () => {
   return (
     <Stack
       direction="row"
-      spacing={globalState.currentPage === "welcome" ? 3 : 5}
+      spacing={globalState.currentPage === DifferentPages.WELCOME ? 3 : 5}
       display="flex"
       sx={{ alignItems: "center" }}
     >

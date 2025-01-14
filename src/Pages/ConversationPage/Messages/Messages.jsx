@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useRef } from "react";
 
 import MsgItem from "./MsgItem";
 import { AppStateContext } from "../../../AppContext";
+import { translations } from "../../../Constants";
 
 const Messages = () => {
   const { globalState } = useContext(AppStateContext);
@@ -35,7 +36,9 @@ const Messages = () => {
             justifyItems: "center",
           }}
         >
-          <Typography variant="h4">No messages yet</Typography>
+          <Typography variant="h4">
+            {translations[globalState.currentLanguage].noMessageTxt}
+          </Typography>
         </Box>
       )}
       {[...globalState.messages].reverse().map((msg) => (

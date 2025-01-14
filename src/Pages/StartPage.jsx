@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { Box } from "@mui/material";
 import { AppStateContext } from "../AppContext";
+import { DifferentPages } from "../Constants";
 
 const StartPage = () => {
   const { globalState, setGlobalState } = useContext(AppStateContext);
@@ -13,7 +14,7 @@ const StartPage = () => {
   const handleGoToGetStartedPage = () => {
     setGlobalState((prevState) => ({
       ...prevState,
-      currentPage: "GetStarted",
+      currentPage: DifferentPages.GET_STARTED,
       pageStates: {
         ...prevState.pageStates,
         startStates: {

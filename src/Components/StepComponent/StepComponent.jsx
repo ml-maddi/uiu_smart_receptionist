@@ -6,6 +6,7 @@ import React, { useContext, useEffect } from "react";
 import { AppStateContext } from "../../AppContext";
 import FaceComponent from "./FaceComponent";
 import NameComponent from "./NameComponent";
+import { DifferentPages, DifferentStages } from "../../Constants";
 
 const BoxStyle = {
   //   position: "absolute",
@@ -30,6 +31,10 @@ const StepComponent = () => {
   const handleClose = () => {
     setGlobalState((prevState) => ({
       ...prevState,
+      currentStage:
+        prevState.currentPage === DifferentPages.GET_STARTED
+          ? DifferentStages.USER_IN_GET_STARTED_PAGE
+          : "",
       componentStates: {
         ...prevState.componentStates,
         getStartedModalStates: {

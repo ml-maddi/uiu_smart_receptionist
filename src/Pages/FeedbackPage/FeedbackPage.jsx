@@ -230,7 +230,7 @@ const FeedbackPage = () => {
                   handleFeedbackSubmitting(globalState, setGlobalState)
                 }
               >
-                Submit
+                {translations[globalState.currentLanguage].surveySubmitBtnText}
               </Button>
             )
           }
