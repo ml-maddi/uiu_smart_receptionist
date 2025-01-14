@@ -9,6 +9,7 @@ import StartPage from "./Pages/StartPage";
 import ConversationPage from "./Pages/ConversationPage/ConversationPage";
 import ShowThankYou from "./Components/ShowThankYou";
 import ListeningOverlay from "./Pages/ConversationPage/ListeningOverlay";
+import Ratings from "./Pages/FeedbackPage/Ratings";
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
 
           <Route path="/conversation" element={<ConversationPage />} />
           <Route path="/thanks" element={<ShowThankYou />} />
-          <Route path="/test" element={<ListeningOverlay />} />
+          <Route path="/test" element={<Ratings />} />
         </Routes>
       </Router>
     </AppStateProvider>
