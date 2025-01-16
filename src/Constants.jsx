@@ -214,8 +214,7 @@ export const initState = {
       listeningEnd: false,
       currentFeedbackItem: 0,
       allFeedbackStates: Array(7).fill({
-        emojiRating: 1,
-        detail: "",
+        emojiRating: 5,
       }),
     },
   },

@@ -23,7 +23,7 @@ import {
 } from "../../Functions";
 const Mic2 = () => {
   // context handler
-  const { globalState, setGlobalState, stopCurrentAudio } =
+  const { globalState, setGlobalState, addAudioToQueue, stopCurrentAudio } =
     useContext(AppStateContext);
   const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
@@ -37,7 +37,7 @@ const Mic2 = () => {
     await QuestionAsking(
       globalState,
       setGlobalState,
-      audioContextRef,
+      addAudioToQueue,
       navigate,
       globalState.currentQuestionData
     );
@@ -59,7 +59,7 @@ const Mic2 = () => {
     //   audioContextRef.current.pause();
     //   audioContextRef.current.currentTime = 0; // Reset the playback position
     // }
-
+    stopCurrentAudio();
     handleConversationMicBtnPressed(setGlobalState);
     try {
       // Reset any previous audio context and analyzer

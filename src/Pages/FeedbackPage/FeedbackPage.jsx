@@ -17,6 +17,7 @@ import {
   handleFeedbackSubmitting,
   toggleFeedbackPage,
   updateCurrentFeedbackPageNumber,
+  updateRatingSpecificPage,
 } from "../../Functions";
 import CloseIcon from "@mui/icons-material/Close";
 import Ratings from "./Ratings";
@@ -55,13 +56,7 @@ const FeedbackPage = () => {
   ]);
 
   const theme = useTheme();
-  const handleNext = () => {
-    updateCurrentFeedbackPageNumber(setGlobalState, "next");
-  };
 
-  const handleBack = () => {
-    updateCurrentFeedbackPageNumber(setGlobalState, "back");
-  };
   return (
     <Modal
       open={globalState.componentStates.feedbackStates.showFeedbackModal}
@@ -115,29 +110,94 @@ const FeedbackPage = () => {
           lineHeight="2rem"
           fontWeight="300"
           mt="1rem"
-          mb="6rem"
+          mb="3rem"
           variant="h5"
         >
           {translations[globalState.currentLanguage].feedbackText3}
         </Typography>
         <Typography
-          sx={{ height: "5rem", lineHeight: "3rem" }}
+          sx={{ height: "2rem", lineHeight: "2rem" }}
           fontWeight="bold"
           variant="h5"
-          mb="1rem"
+          // mb="1rem"
         >
-          {
-            translations[globalState.currentLanguage].feedbackQuestions[
-              globalState.componentStates.feedbackStates.currentFeedbackItem
-            ]
-          }
+          {translations[globalState.currentLanguage].feedbackQuestions[0]}
         </Typography>
-        <Ratings />
-        <Typography mt="3rem" mb="1rem" fontWeight="bold" variant="h5">
+        <Ratings index={0} />
+        <Typography
+          sx={{ height: "4rem", lineHeight: "2rem" }}
+          fontWeight="bold"
+          variant="h5"
+          // mb="1rem"
+        >
+          {translations[globalState.currentLanguage].feedbackQuestions[1]}
+        </Typography>
+        <Ratings index={1} />
+        <Typography
+          sx={{ height: "2rem", lineHeight: "2rem" }}
+          fontWeight="bold"
+          variant="h5"
+          // mb="1rem"
+        >
+          {translations[globalState.currentLanguage].feedbackQuestions[2]}
+        </Typography>
+        <Ratings index={2} />
+        <Typography
+          sx={{ height: "4rem", lineHeight: "2rem" }}
+          fontWeight="bold"
+          variant="h5"
+          // mb="1rem"
+        >
+          {translations[globalState.currentLanguage].feedbackQuestions[3]}
+        </Typography>
+        <Ratings index={3} />
+        <Typography
+          sx={{ height: "2rem", lineHeight: "2rem" }}
+          fontWeight="bold"
+          variant="h5"
+          // mb="1rem"
+        >
+          {translations[globalState.currentLanguage].feedbackQuestions[4]}
+        </Typography>
+        <Ratings index={4} />
+        <Typography
+          sx={{ height: "2rem", lineHeight: "2rem" }}
+          fontWeight="bold"
+          variant="h5"
+          // mb="1rem"
+        >
+          {translations[globalState.currentLanguage].feedbackQuestions[5]}
+        </Typography>
+        <Ratings index={5} />
+        <Typography
+          sx={{ height: "4rem", lineHeight: "2rem" }}
+          fontWeight="bold"
+          variant="h5"
+          // mb="1rem"
+        >
+          {translations[globalState.currentLanguage].feedbackQuestions[6]}
+        </Typography>
+        <Ratings index={6} />
+
+        <Button
+          sx={{
+            my: "2rem",
+            fontSize: "2rem",
+            width: "60%",
+            mx: "auto",
+            borderRadius: "2rem",
+          }}
+          variant="contained"
+          color="warning"
+          onClick={() => handleFeedbackSubmitting(globalState, setGlobalState)}
+        >
+          {translations[globalState.currentLanguage].surveySubmitBtnText}
+        </Button>
+        {/* <Typography mt="3rem" mb="1rem" fontWeight="bold" variant="h5">
           {translations[globalState.currentLanguage].feedbackText4}
         </Typography>
-        <RecordingComponents />
-        <Box
+        <RecordingComponents /> */}
+        {/* <Box
           // bgcolor="green"
           sx={{
             height: "30rem",
@@ -179,9 +239,9 @@ const FeedbackPage = () => {
               //   variant="filled"
             />
           )}
-        </Box>
+        </Box> */}
 
-        <MobileStepper
+        {/* <MobileStepper
           variant="progress"
           sx={{
             mt: "3rem",
@@ -252,7 +312,7 @@ const FeedbackPage = () => {
               {translations[globalState.currentLanguage].feedbackBackBtnText}
             </Button>
           }
-        />
+        /> */}
       </Paper>
     </Modal>
   );

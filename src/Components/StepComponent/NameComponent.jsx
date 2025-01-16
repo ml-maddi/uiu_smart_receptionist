@@ -37,7 +37,7 @@ const NameComponent = () => {
   const { globalState, setGlobalState } = useContext(AppStateContext);
   const [layout, setLayout] = useState("default");
   const [keyboardLayout, setKeyboardLayout] = useState(englishLayout);
-  const keyboard = useRef();
+  const keyboard = useRef(null);
 
   // // Manual input handling for the text field
   const handleInputChange = (event) => {
@@ -61,7 +61,9 @@ const NameComponent = () => {
       ...prevState,
       userName: input,
     }));
-    keyboard.current.setInput(input);
+    if (keyboard !== null && keyboard.current !== null) {
+      keyboard.current.setInput(input);
+    }
   };
 
   useEffect(() => {
@@ -166,7 +168,7 @@ const NameComponent = () => {
         </Typography>
         <TextField
           value={globalState.userName}
-          onChange={handleInputChange}
+          // onChange={handleInputChange}
           onFocus={() => {
             updateUserName(globalState.userName);
           }}

@@ -72,8 +72,7 @@ export const AppStateProvider = ({ children }) => {
         listeningEnd: false,
         currentFeedbackItem: 0,
         allFeedbackStates: Array(7).fill({
-          emojiRating: 1,
-          detail: "",
+          emojiRating: 5,
         }),
       },
     },
@@ -90,6 +89,14 @@ export const AppStateProvider = ({ children }) => {
     if (globalState.audioInstance !== null) {
       globalState.audioInstance.pause();
       globalState.audioInstance.currentTime = 0; // Reset to the start
+      setGlobalState((prevState) => ({
+        ...prevState,
+        audioInstance: null,
+        audioPlayingData: {
+          ...prevState.audioPlayingData,
+          status: AudioPlayingStatus.DONE,
+        },
+      }));
       console.log("I was called stop audio from here");
     }
     if (
@@ -171,71 +178,49 @@ export const AppStateProvider = ({ children }) => {
         console.log(`${audioInfo.name} started playing`);
 
         newAudio.onended = () => {
-          setGlobalState((prevState) => ({
-            ...prevState,
-            audioInstance: null,
-            audioPlayingData: {
-              ...prevState.audioPlayingData,
-              status: AudioPlayingStatus.DONE,
-            },
-          }));
-          if (audioInfo.name === "Question_ask audio") {
-            setGlobalState((prevState) => ({
-              ...prevState,
-              pageStates: {
-                ...prevState.pageStates,
-                getStartedStates: {
-                  ...prevState.pageStates.getStartedStates,
-                  questionAskAudioPlayDone: true,
-                },
-              },
-            }));
-          } else if (audioInfo.name === "Name audio") {
-            setGlobalState((prevState) => ({
-              ...prevState,
-              pageStates: {
-                ...prevState.pageStates,
-                getStartedStates: {
-                  ...prevState.pageStates.getStartedStates,
-                  greetNameAudioPlayDone: true,
-                },
-              },
-            }));
-          } else if (audioInfo.name === "Welcome audio") {
-            setGlobalState((prevState) => ({
-              ...prevState,
-              pageStates: {
-                ...prevState.pageStates,
-                getStartedStates: {
-                  ...prevState.pageStates.getStartedStates,
-                  welcomeAudioPlayDone: true,
-                },
-              },
-            }));
-          }
-        };
-      } else if (audioInfo.data) {
-        const newAudio = new Audio(audioInfo.data);
-        newAudio.play();
-        console.log(`${audioInfo.name} started playing`);
-
-        setGlobalState((prevState) => ({
-          ...prevState,
-          audioInstance: newAudio, // Store new audio instance in globalState
-          audioPlayingData: {
-            ...prevState.audioPlayingData,
-            status: AudioPlayingStatus.STARTED,
-          },
-        }));
-        newAudio.onended = () => {
-          setGlobalState((prevState) => ({
-            ...prevState,
-            audioInstance: null,
-            audioPlayingData: {
-              ...prevState.audioPlayingData,
-              status: AudioPlayingStatus.DONE,
-            },
-          }));
+          stopCurrentAudio();
+          // setGlobalState((prevState) => ({
+          //   ...prevState,
+          //   audioInstance: null,
+          //   audioPlayingData: {
+          //     ...prevState.audioPlayingData,
+          //     status: AudioPlayingStatus.DONE,
+          //   },
+          // }));
+          // if (audioInfo.name === "Question_ask audio") {
+          //   setGlobalState((prevState) => ({
+          //     ...prevState,
+          //     pageStates: {
+          //       ...prevState.pageStates,
+          //       getStartedStates: {
+          //         ...prevState.pageStates.getStartedStates,
+          //         questionAskAudioPlayDone: true,
+          //       },
+          //     },
+          //   }));
+          // } else if (audioInfo.name === "Name audio") {
+          //   setGlobalState((prevState) => ({
+          //     ...prevState,
+          //     pageStates: {
+          //       ...prevState.pageStates,
+          //       getStartedStates: {
+          //         ...prevState.pageStates.getStartedStates,
+          //         greetNameAudioPlayDone: true,
+          //       },
+          //     },
+          //   }));
+          // } else if (audioInfo.name === "Welcome audio") {
+          //   setGlobalState((prevState) => ({
+          //     ...prevState,
+          //     pageStates: {
+          //       ...prevState.pageStates,
+          //       getStartedStates: {
+          //         ...prevState.pageStates.getStartedStates,
+          //         welcomeAudioPlayDone: true,
+          //       },
+          //     },
+          //   }));
+          // }
         };
       }
     }

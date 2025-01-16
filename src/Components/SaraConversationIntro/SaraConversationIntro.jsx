@@ -89,7 +89,7 @@ const SaraConversationIntro = () => {
                 },
               },
             }));
-          }, 1000); // 3 seconds after show
+          }, 5000); // 3 seconds after show
           // Cleanup for hideTooltipTimer
           return () => clearTimeout(hideTooltipTimer);
         }, 4000); // initial 2 seconds delay

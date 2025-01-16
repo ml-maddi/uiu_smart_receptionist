@@ -294,10 +294,14 @@ export const getCurrentDetailRatingSpecificPage = (globalState) => {
     globalState.componentStates.feedbackStates.currentFeedbackItem
   ].detail;
 };
-export const updateRatingSpecificPage = (setGlobalState, value) => {
+export const updateRatingSpecificPage = (
+  setGlobalState,
+  value,
+  currentIndex
+) => {
   setGlobalState((prevState) => {
-    const currentIndex =
-      prevState.componentStates.feedbackStates.currentFeedbackItem;
+    // const currentIndex =
+    //   prevState.componentStates.feedbackStates.currentFeedbackItem;
 
     // Create a new array with the updated emojiRating
     const updatedFeedbackStates =
@@ -488,10 +492,10 @@ const saveToFile = (globalState) => {
 };
 
 export const handleFeedbackSubmitting = async (globalState, setGlobalState) => {
+  saveToFile(globalState);
   toggleFeedbackPage(setGlobalState);
   console.log(globalState.componentStates.feedbackStates.allFeedbackStates);
   await submitSurveyToDB(globalState);
-  // saveToFile(globalState);
   setGlobalState((prevState) => ({
     ...prevState,
     pageStates: {
@@ -534,14 +538,18 @@ export const QuestionAnswering = async (
   text
 ) => {
   const messageId = Date.now(); // Unique ID based on timestamp
-  // console.log(messageId);
-  // const userMessage = {
-  //   user_id: String(messageId),
-  //   user_type: "user",
-  //   text: text,
-  // };
+  console.log(messageId);
+  const userMessage = {
+    user_id: String(messageId),
+    user_type: "user",
+    text: text,
+  };
   const botId = String(messageId + 1);
-
+  setGlobalState((prevState) => ({
+    ...prevState,
+    messages: [...prevState.messages, userMessage],
+    currentMessage: userMessage,
+  }));
   try {
     console.log(globalState.messages);
     // Start the streaming request
@@ -684,7 +692,7 @@ export const QuestionAnswering = async (
 export const QuestionAsking = (
   globalState,
   setGlobalState,
-  audioRef,
+  addAudioToQueue,
   navigate,
   base64data
 ) => {
@@ -734,13 +742,13 @@ export const QuestionAsking = (
               currentQuestionData: "",
             }));
 
-            addUserQuestionToMessages(setGlobalState, transcript);
-            // QuestionAnswering(
-            //   globalState,
-            //   setGlobalState,
-            //   audioRef,
-            //   transcript
-            // );
+            // addUserQuestionToMessages(setGlobalState, transcript);
+            QuestionAnswering(
+              globalState,
+              setGlobalState,
+              addAudioToQueue,
+              transcript
+            );
             console.log(transcript);
           }
         } else {
@@ -754,8 +762,13 @@ export const QuestionAsking = (
             currentQuestionData: "",
           }));
 
-          addUserQuestionToMessages(setGlobalState, transcript);
-          // QuestionAnswering(globalState, setGlobalState, audioRef, transcript);
+          // addUserQuestionToMessages(setGlobalState, transcript);
+          QuestionAnswering(
+            globalState,
+            setGlobalState,
+            addAudioToQueue,
+            transcript
+          );
           console.log(transcript);
         }
       })
@@ -765,15 +778,17 @@ export const QuestionAsking = (
             ? "Network error! Please check your connection."
             : "No voice was detected.Try again!";
         console.error("There was an error!", error);
-        setGlobalState((prevState) => ({
-          ...prevState,
-          notificationStates: {
-            ...prevState.notificationStates,
-            showNotification: true,
-            notificationType: "error",
-            notificationMessage: errorMessage,
-          },
-        }));
+        setTimeout(() => {
+          setGlobalState((prevState) => ({
+            ...prevState,
+            notificationStates: {
+              ...prevState.notificationStates,
+              showNotification: true,
+              notificationType: "error",
+              notificationMessage: errorMessage,
+            },
+          }));
+        }, 3000);
 
         // setLoading(false);
       });
@@ -784,15 +799,17 @@ export const QuestionAsking = (
         : "No voice was detected.Try again!";
 
     console.error("There was an error!", error);
-    setGlobalState((prevState) => ({
-      ...prevState,
-      notificationStates: {
-        ...prevState.notificationStates,
-        showNotification: true,
-        notificationType: "error",
-        notificationMessage: errorMessage,
-      },
-    }));
+    setTimeout(() => {
+      setGlobalState((prevState) => ({
+        ...prevState,
+        notificationStates: {
+          ...prevState.notificationStates,
+          showNotification: true,
+          notificationType: "error",
+          notificationMessage: errorMessage,
+        },
+      }));
+    }, 3000);
   }
 };
 

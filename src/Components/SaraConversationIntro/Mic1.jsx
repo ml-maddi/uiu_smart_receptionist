@@ -18,7 +18,7 @@ import { StopCircleRounded } from "@mui/icons-material";
 const containsBangla = (str) => /[\u0980-\u09FF]/.test(str);
 
 const Mic1 = () => {
-  const { globalState, setGlobalState, stopCurrentAudio } =
+  const { globalState, setGlobalState, addAudioToQueue, stopCurrentAudio } =
     useContext(AppStateContext);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -33,7 +33,7 @@ const Mic1 = () => {
     await QuestionAsking(
       globalState,
       setGlobalState,
-      audioContextRef,
+      addAudioToQueue,
       navigate,
       globalState.currentQuestionData
     );

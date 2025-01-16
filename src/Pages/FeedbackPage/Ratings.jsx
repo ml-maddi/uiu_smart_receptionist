@@ -24,27 +24,34 @@ const labelColors = ["red", "red", "orange", "green", "green"];
 const customIcons = {
   1: {
     icon: (
-      <SentimentVeryDissatisfiedIcon sx={{ fontSize: "4rem" }} color="error" />
+      <SentimentVeryDissatisfiedIcon
+        sx={{ fontSize: "3.5rem" }}
+        color="error"
+      />
     ),
     label: "Very Dissatisfied",
   },
   2: {
-    icon: <SentimentDissatisfiedIcon sx={{ fontSize: "4rem" }} color="error" />,
+    icon: (
+      <SentimentDissatisfiedIcon sx={{ fontSize: "3.5rem" }} color="error" />
+    ),
     label: "Dissatisfied",
   },
   3: {
-    icon: <SentimentSatisfiedIcon sx={{ fontSize: "4rem" }} color="warning" />,
+    icon: (
+      <SentimentSatisfiedIcon sx={{ fontSize: "3.5rem" }} color="warning" />
+    ),
     label: "Neutral",
   },
   4: {
     icon: (
-      <SentimentSatisfiedAltIcon sx={{ fontSize: "4rem" }} color="success" />
+      <SentimentSatisfiedAltIcon sx={{ fontSize: "3.5rem" }} color="success" />
     ),
     label: "Satisfied",
   },
   5: {
     icon: (
-      <SentimentVerySatisfiedIcon sx={{ fontSize: "4rem" }} color="success" />
+      <SentimentVerySatisfiedIcon sx={{ fontSize: "3.5rem" }} color="success" />
     ),
     label: "Very Satisfied",
   },
@@ -60,8 +67,10 @@ function IconContainer(props) {
         flexDirection: "column",
         alignContent: "center",
         alignItems: "center",
-        m: "2rem",
-        // p: "2rem",
+        // mb: "1.5rem",
+        // mx: "2rem",
+        // mt: "2rem",
+        p: "1rem",
       }}
     >
       {customIcons[value].icon}
@@ -84,16 +93,20 @@ IconContainer.propTypes = {
   value: PropTypes.number.isRequired,
 };
 
-const Ratings = () => {
+const Ratings = ({ index }) => {
   const { globalState, setGlobalState } = useContext(AppStateContext);
-  const [value, setValue] = React.useState(5);
+  // const [value, setValue] = React.useState(5);
   return (
     <StyledRating
       name="highlight-selected-only"
-      value={globalState.currentRatingValue}
+      value={
+        globalState.componentStates.feedbackStates.allFeedbackStates[index]
+          .emojiRating
+      }
+      // value={curValue}
       onChange={(event, newValue) => {
         // setValue(newValue);
-        updateRatingSpecificPage(setGlobalState, newValue);
+        updateRatingSpecificPage(setGlobalState, newValue, index);
       }}
       IconContainerComponent={IconContainer}
       getLabelText={(value) => customIcons[value].label}
