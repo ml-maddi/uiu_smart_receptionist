@@ -646,15 +646,15 @@ export const QuestionAnswering = async (
         //   });
       });
     }
-    (async () => {
-      await speakOut(
-        botResponse.text,
-        globalState,
-        setGlobalState,
-        addAudioToQueue
-      ); // Perform the task
-      console.log("Background task complete");
-    })();
+    // (async () => {
+    //   await speakOut(
+    //     botResponse.text,
+    //     globalState,
+    //     setGlobalState,
+    //     addAudioToQueue
+    //   ); // Perform the task
+    //   console.log("Background task complete");
+    // })();
     await addQuestionAnswerToDB(globalState.userId, text, botResponse.text);
   } catch (error) {
     const errorMessage =
@@ -876,6 +876,40 @@ export const handleUserFound = async (setGlobalState, userId) => {
     },
   }));
 };
+const detectLanguage = (inputText) => {
+  const banglaCount = Array.from(inputText).filter(
+    (char) => char.charCodeAt(0) >= 0x0980 && char.charCodeAt(0) <= 0x09ff
+  ).length;
+
+  const englishCount = Array.from(inputText).filter(
+    (char) =>
+      (char.charCodeAt(0) >= 0x0041 && char.charCodeAt(0) <= 0x007a) || // A-Z or a-z
+      (char.charCodeAt(0) >= 0x0030 && char.charCodeAt(0) <= 0x0039) // 0-9
+  ).length;
+
+  if (banglaCount > englishCount) {
+    return "Bangla";
+  } else if (englishCount > banglaCount) {
+    return "English";
+  } else {
+    return "Mixed or Unknown";
+  }
+};
+const nameInputOkay = (globalState) => {
+  if (
+    globalState.currentLanguage == "bn" &&
+    detectLanguage(globalState.userName) === "Bangla"
+  ) {
+    return true;
+  } else if (
+    globalState.currentLanguage == "en" &&
+    detectLanguage(globalState.userName) === "English"
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
 export const handleStartBtnClick = async (globalState, setGlobalState) => {
   if (globalState.userName === "") {
     setGlobalState((prevState) => ({
@@ -885,6 +919,17 @@ export const handleStartBtnClick = async (globalState, setGlobalState) => {
         showNotification: true,
         notificationType: "error",
         notificationMessage: "Please add your name to continue!",
+      },
+    }));
+  } else if (nameInputOkay(globalState) === false) {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      notificationStates: {
+        ...prevState.notificationStates,
+        showNotification: true,
+        notificationType: "error",
+        notificationMessage:
+          "Please enter Bangla text when Bangla language is selected and English text when English language is selected!",
       },
     }));
   } else {

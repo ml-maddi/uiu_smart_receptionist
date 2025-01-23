@@ -169,9 +169,9 @@ const NameComponent = () => {
         <TextField
           value={globalState.userName}
           // onChange={handleInputChange}
-          onFocus={() => {
-            updateUserName(globalState.userName);
-          }}
+          // onFocus={() => {
+          //   updateUserName(globalState.userName);
+          // }}
           placeholder={getPlaceholderText(globalState)}
           InputProps={{
             endAdornment: (

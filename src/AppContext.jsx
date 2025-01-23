@@ -136,6 +136,9 @@ export const AppStateProvider = ({ children }) => {
       globalState.audioPlayingData.name === "Name audio" &&
       !globalState.pageStates.getStartedStates.greetNameAudioPlayDone
     ) {
+      setTimeout(() => {
+        console.log("delaying");
+      }, 3000);
       setGlobalState((prevState) => ({
         ...prevState,
         pageStates: {
