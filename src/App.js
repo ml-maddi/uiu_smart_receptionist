@@ -11,6 +11,8 @@ import ShowThankYou from "./Components/ShowThankYou";
 import ListeningOverlay from "./Pages/ConversationPage/ListeningOverlay";
 import Ratings from "./Pages/FeedbackPage/Ratings";
 import FeedbackPage from "./Pages/FeedbackPage/FeedbackPage";
+import IncrementalTextSplitter from "./Components/Test1";
+import AudioPlayer from "./Components/Test2";
 
 function App() {
   return (
@@ -22,7 +24,8 @@ function App() {
 
           <Route path="/conversation" element={<ConversationPage />} />
           <Route path="/thanks" element={<ShowThankYou />} />
-          <Route path="/test" element={<FeedbackPage />} />
+          <Route path="/test" element={<IncrementalTextSplitter />} />
+          <Route path="/test-audio" element={<AudioPlayer />} />
         </Routes>
       </Router>
     </AppStateProvider>

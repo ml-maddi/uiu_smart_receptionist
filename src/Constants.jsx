@@ -213,6 +213,12 @@ export const initState = {
       showKeyboard: false,
       keyboardRef: null,
       stopListening: false,
+      fullTextDone: false,
+      textSplitStates: {
+        fullText: "",
+        splitTexts: [],
+        splitAudios: [],
+      },
     },
   },
   surveyData: {

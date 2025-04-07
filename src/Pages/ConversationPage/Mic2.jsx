@@ -49,17 +49,12 @@ const Mic2 = () => {
     }
   }, [globalState.currentQuestionData]);
 
-  const handleRecording = async () => {
-    await stopCurrentAudio();
-  };
+  // const handleRecording = async () => {
+  //   await stopCurrentAudio();
+  // };
   const startRecording = async () => {
     console.log("calling start recording");
 
-    // if (audioContextRef.current && !audioContextRef.current.paused) {
-    //   audioContextRef.current.pause();
-    //   audioContextRef.current.currentTime = 0; // Reset the playback position
-    // }
-    stopCurrentAudio();
     handleConversationMicBtnPressed(setGlobalState);
     try {
       // Reset any previous audio context and analyzer
@@ -159,53 +154,6 @@ const Mic2 = () => {
       stopRecording();
     }
   }, [globalState.pageStates.ConversationStates.stopListening]);
-
-  // continuousy detects silence for 7 seconds at once
-  const detectSilence = () => {
-    const buffer = new Uint8Array(analyserRef.current.fftSize);
-
-    let silentStart = null; // Track when silence started
-    const checkSilence = () => {
-      // if (!isRecording) {
-      //   console.log("Stopped recording, exiting silence detection.");
-      //   return; // Stop checking if not recording
-      // }
-
-      // if (globalState.pageStates.ConversationStates.stopListening === true)
-      //   return;
-
-      analyserRef.current.getByteTimeDomainData(buffer);
-      const isSilent = buffer.every((value) => Math.abs(value - 128) < 5);
-
-      if (isSilent) {
-        if (!silentStart) {
-          silentStart = performance.now(); // Start silence timer
-          console.log("Silence detected. Timer started.");
-        } else if (performance.now() - silentStart >= 5500) {
-          console.log("5 seconds of silence detected. Stopping recording.");
-          stopRecording();
-          return;
-        } else {
-          console.log(
-            `Silence ongoing for ${performance.now() - silentStart}ms.`
-          );
-        }
-      } else {
-        if (silentStart) {
-          console.log("Sound detected. Resetting silence timer.");
-        }
-        silentStart = null; // Reset silent start if sound is detected
-      }
-
-      requestAnimationFrame(checkSilence); // Continue checking
-    };
-
-    console.log("Starting silence detection...");
-    // if (globalState.pageStates.ConversationStates.stopListening === false){
-
-    // }
-    checkSilence();
-  };
 
   return (
     <Stack

@@ -54,6 +54,12 @@ export const AppStateProvider = ({ children }) => {
         showKeyboard: false,
         keyboardRef: null,
         stopListening: false,
+        fullTextDone: false,
+        textSplitStates: {
+          fullText: "",
+          splitTexts: [],
+          splitAudios: [],
+        },
       },
     },
     // database saving wise
@@ -205,18 +211,27 @@ export const AppStateProvider = ({ children }) => {
   };
   // Utility function to stop current audio
   const stopCurrentAudio = () => {
-    console.log("Audio Stopped is called");
+    console.log(
+      "Audio Stopped is called, audioInstance:",
+      globalState.audioInstance
+    );
     if (globalState.audioInstance !== null) {
-      globalState.audioInstance.pause();
-      globalState.audioInstance.currentTime = 0; // Reset to the start
-      setGlobalState((prevState) => ({
-        ...prevState,
-        audioInstance: null,
-        audioPlayingData: {
-          ...prevState.audioPlayingData,
-          status: AudioPlayingStatus.DONE,
-        },
-      }));
+      setGlobalState((prevState) => {
+        // Check if there’s an audio instance
+        prevState.audioInstance.pause(); // Pause the audio
+        prevState.audioInstance.currentTime = 0;
+        console.log("Audio paused successfully");
+        // if (prevState.audioInstance) {
+        //   prevState.audioInstance.pause(); // Pause the audio
+        //   prevState.audioInstance.currentTime = 0; // Reset to start (optional)
+        //   console.log("Audio paused successfully");
+        // }
+        return {
+          ...prevState,
+          audioInstance: null,
+          audioPlayingData: null,
+        };
+      });
       console.log("I was called stop audio from here");
     }
     if (
@@ -282,68 +297,24 @@ export const AppStateProvider = ({ children }) => {
       globalState.audioPlayingData !== null &&
       globalState.audioPlayingData.status === AudioPlayingStatus.NOT_STARTED
     ) {
-      // Use a functional state update to handle the shift
-      const audioInfo = globalState.audioPlayingData; // Get the first item
-
-      console.log(audioInfo); // Log the item being processed
+      const audioInfo = globalState.audioPlayingData;
+      console.log(audioInfo);
 
       if (audioInfo.file) {
+        const newAudio = new Audio(audioInfo.file); // Create the Audio object first
         setGlobalState((prevState) => ({
           ...prevState,
-          audioInstance: newAudio, // Store new audio instance in globalState
+          audioInstance: newAudio, // Store the correct Audio object
           audioPlayingData: {
             ...prevState.audioPlayingData,
             status: AudioPlayingStatus.STARTED,
           },
         }));
-        const newAudio = new Audio(audioInfo.file);
         await newAudio.play();
         console.log(`${audioInfo.name} started playing`);
 
         newAudio.onended = () => {
           stopCurrentAudio();
-          // setGlobalState((prevState) => ({
-          //   ...prevState,
-          //   audioInstance: null,
-          //   audioPlayingData: {
-          //     ...prevState.audioPlayingData,
-          //     status: AudioPlayingStatus.DONE,
-          //   },
-          // }));
-          // if (audioInfo.name === "Question_ask audio") {
-          //   setGlobalState((prevState) => ({
-          //     ...prevState,
-          //     pageStates: {
-          //       ...prevState.pageStates,
-          //       getStartedStates: {
-          //         ...prevState.pageStates.getStartedStates,
-          //         questionAskAudioPlayDone: true,
-          //       },
-          //     },
-          //   }));
-          // } else if (audioInfo.name === "Name audio") {
-          //   setGlobalState((prevState) => ({
-          //     ...prevState,
-          //     pageStates: {
-          //       ...prevState.pageStates,
-          //       getStartedStates: {
-          //         ...prevState.pageStates.getStartedStates,
-          //         greetNameAudioPlayDone: true,
-          //       },
-          //     },
-          //   }));
-          // } else if (audioInfo.name === "Welcome audio") {
-          //   setGlobalState((prevState) => ({
-          //     ...prevState,
-          //     pageStates: {
-          //       ...prevState.pageStates,
-          //       getStartedStates: {
-          //         ...prevState.pageStates.getStartedStates,
-          //         welcomeAudioPlayDone: true,
-          //       },
-          //     },
-          //   }));
-          // }
         };
       }
     }

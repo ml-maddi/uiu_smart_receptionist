@@ -551,6 +551,18 @@ export const QuestionAnswering = async (
     ...prevState,
     messages: [...prevState.messages, userMessage],
     currentMessage: userMessage,
+    pageStates: {
+      ...prevState.pageStates,
+      ConversationStates: {
+        ...prevState.pageStates.ConversationStates,
+        textSplitStates: {
+          ...prevState.pageStates.ConversationStates.textSplitStates,
+          fullText: "",
+          splitTexts: [],
+          splitAudios: [],
+        },
+      },
+    },
   }));
   try {
     console.log(globalState.messages);
@@ -561,7 +573,7 @@ export const QuestionAnswering = async (
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: globalState.userId,
+          user_id: globalState.userId ? globalState.userId : "demo123",
           // user_id: "12000test",
           query: text,
           query_answer_list: globalState.messages,
@@ -592,6 +604,13 @@ export const QuestionAnswering = async (
     setGlobalState((prevState) => ({
       ...prevState,
       messages: [...prevState.messages, botResponse],
+      pageStates: {
+        ...prevState.pageStates,
+        ConversationStates: {
+          ...prevState.pageStates.ConversationStates,
+          fullTextDone: false,
+        },
+      },
     }));
 
     let sliceIndex = 0;
@@ -608,6 +627,8 @@ export const QuestionAnswering = async (
         botResponseText += content; // Append content to bot response text
         botResponse.text = botResponseText; // Update the bot response text
 
+        console.log("bot response");
+        console.log(botResponse.text);
         // Update the existing bot message in the global state
         setGlobalState((prevState) => {
           const updatedMessages = prevState.messages.map((msg) => {
@@ -617,8 +638,22 @@ export const QuestionAnswering = async (
             }
             return msg; // Return unchanged message
           });
-          console.log(updatedMessages);
-          return { ...prevState, messages: updatedMessages };
+          // console.log(updatedMessages);
+          return {
+            ...prevState,
+            messages: updatedMessages,
+            pageStates: {
+              ...prevState.pageStates,
+              ConversationStates: {
+                ...prevState.pageStates.ConversationStates,
+
+                textSplitStates: {
+                  ...prevState.pageStates.ConversationStates.textSplitStates,
+                  fullText: botResponse.text,
+                },
+              },
+            },
+          };
         });
         //   checkAndExtract(
         //     botResponseText,
@@ -644,6 +679,19 @@ export const QuestionAnswering = async (
         //   });
       });
     }
+    if (done) {
+      setGlobalState((prevState) => ({
+        ...prevState,
+        pageStates: {
+          ...prevState.pageStates,
+          ConversationStates: {
+            ...prevState.pageStates.ConversationStates,
+            fullTextDone: true,
+          },
+        },
+      }));
+    }
+
     // (async () => {
     //   await speakOut(
     //     botResponse.text,
@@ -653,6 +701,7 @@ export const QuestionAnswering = async (
     //   ); // Perform the task
     //   console.log("Background task complete");
     // })();
+
     await addQuestionAnswerToDB(globalState.userId, text, botResponse.text);
   } catch (error) {
     const errorMessage =
@@ -726,11 +775,6 @@ export const QuestionAsking = (
             console.log(transcript);
           }
         } else {
-          if (globalState.currentPage === DifferentPages.GET_STARTED) {
-            setTimeout(() => {
-              navigate("/conversation");
-            }, 500); // 2000ms = 2 seconds
-          }
           setGlobalState((prevState) => ({
             ...prevState,
             currentQuestionData: "",
