@@ -702,7 +702,7 @@ export const QuestionAnswering = async (
     //   console.log("Background task complete");
     // })();
 
-    await addQuestionAnswerToDB(globalState.userId, text, botResponse.text);
+    // await addQuestionAnswerToDB(globalState.userId, text, botResponse.text);
   } catch (error) {
     const errorMessage =
       error.code === "ERR_NETWORK"
